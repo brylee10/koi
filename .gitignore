@@ -1,0 +1,5 @@
+.vscode
+# Built binaries
+bin
+# Object files
+obj
