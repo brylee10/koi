@@ -12,18 +12,15 @@ volatile sig_atomic_t client_signal_status = 0;
 // any otherwise unhandled signals to avoid this behavior.
 void ignore_signal([[maybe_unused]] int sig)
 {
-    // std::cerr << "Received signal " << sig << std::endl;
 }
 
 void handle_client_signal(int sig)
 {
-    // std::cout << "Client received signal " << sig << std::endl;
     client_signal_status = sig;
 }
 
 void handle_server_signal(int sig)
 {
-    // std::cout << "Server received signal " << sig << std::endl;
     server_signal_status = sig;
 }
 
@@ -66,10 +63,7 @@ void SignalManager::wait_until_notify()
             client_signal_status = 0;
             break;
         }
+        // Suspends execution until a signal is received
         pause();
-        // std::cout << "Target " << static_cast<int>(target)
-        //           << " received signal. " << "Server signal status: "
-        //           << server_signal_status << ". Client signal status: "
-        //           << client_signal_status << std::endl;
     }
 }

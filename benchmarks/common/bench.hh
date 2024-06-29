@@ -3,8 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
-typedef unsigned long long ull;
+#include "types.hh"
 
 extern const ull NS_PER_SEC;
 
