@@ -2,9 +2,10 @@
  * This benchmark measures the time to send a message of a given size through a pipe.
  */
 
-#include "common/utils.hh"
-#include "common/bench.hh"
-#include "common/signals.hh"
+#include "utils.hh"
+#include "bench.hh"
+#include "signals.hh"
+#include "args.hh"
 
 #include <iostream>
 #include <unistd.h>
@@ -70,13 +71,13 @@ void start_parent(int pipefd[2], ull message_size, ull iterations)
         }
         // Notify client to read
         // std::cout << "Notifying client to read\n";
-        benchmarks.startIteration();
+        benchmarks.start_iteration();
         signal_manager.notify();
         // Wait until client is done reading and tracking benchmarks
         // std::cout << "Waiting for client to notify server that it is done reading\n";
         signal_manager.wait_until_notify();
         // Special case where each iteration is 1 message
-        benchmarks.endIteration(1);
+        benchmarks.end_iteration(1);
     }
 
     delete[] buffer;
@@ -85,16 +86,9 @@ void start_parent(int pipefd[2], ull message_size, ull iterations)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
-    {
-        std::cerr << "Usage: " << argv[0] << " <message_size> <iterations>\n";
-        return 1;
-    }
+    Args args = parse_args(argc, argv);
 
-    ull message_size = std::strtoul(argv[1], nullptr, 10);
-    ull iterations = std::strtoul(argv[2], nullptr, 10);
-
-    if (message_size == 0 || iterations == 0)
+    if (args.message_size == 0 || args.iterations == 0)
     {
         std::cerr << "Both message_size and iterations must be positive integers\n";
         return 1;
@@ -116,12 +110,12 @@ int main(int argc, char *argv[])
     if (pid == 0)
     {
         // Child process
-        start_child(pipefd, message_size, iterations);
+        start_child(pipefd, args.message_size, args.iterations);
     }
     else
     {
         // Parent process
-        start_parent(pipefd, message_size, iterations);
+        start_parent(pipefd, args.message_size, args.iterations);
     }
 
     return 0;

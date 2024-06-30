@@ -31,11 +31,11 @@ public:
 
     // Internally sets `start_ns` to the current time in nano seconds as measured
     // by the system monotonically increasing clock
-    int startIteration();
+    int start_iteration();
 
     // Function to add a new benchmark iteration
-    // Internally calculates the duration since the last call to `startIteration`
-    int endIteration(ull num_messages);
+    // Internally calculates the duration since the last call to `start_iteration`
+    int end_iteration(ull num_messages);
 
     // Display summary statistics to stdout in a pretty printed format
     void report();

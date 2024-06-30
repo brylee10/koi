@@ -1,39 +1,68 @@
 #include "message.hh"
 #include "mq.hh"
+#include "args.hh"
+#include "signals.hh"
+
+#include <cassert>
+#include <sys/msg.h>
 
 // Reads a message from the message queue and writes it back to the server
-void ping_pong(key_t mq_id)
+void ping_pong(key_t msq_id_server_client, key_t msq_id_client_server, ull iterations, ull message_size)
 {
-    Message msg = Message<char>(10);
+    // SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
+    // Message msg = Message<char>(message_size);
+    MsgbufRAII msg_buf(message_size, CLIENT_TYPE);
+
+    std::cout << "Client waiting for server to notify\n";
+    // signal_manager.wait_until_notify();
+    for (ull i = 0; i < iterations; i++)
+    {
+        // Send the message to the client
+        // std::cout << "Receiving message " << i << " from server\n";
+        assert(msg_buf.get_len() == message_size);
+        // Receive a message from the client
+        // ```
+        // ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp,
+        //                int msgflg);
+        // ```
+        // Arguments:
+        // 4. msgtyp: means the first message of type `msgtyp` in the queue is received
+        if (msgrcv(msq_id_server_client, msg_buf.data_ptr(), msg_buf.get_len(), SERVER_TYPE, 0) == -1)
+        {
+            std::cerr << "Error Number: " << errno << std::endl;
+            perror("msgrcv");
+            exit(1);
+        }
+
+        msg_buf.data_ptr()->mtype = CLIENT_TYPE;
+        // std::cout << "Sending message " << i << " to server" << std::endl;
+        if (msgsnd(msq_id_client_server, msg_buf.data_ptr(), msg_buf.get_len(), 0) == -1)
+        {
+            std::cerr << "Error Number: " << errno << "\n";
+            perror("msgsnd");
+            return;
+        }
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
-    {
-        std::cerr << "Usage: " << argv[0] << " <message_size> <iterations>\n";
-        return 1;
-    }
+    Args args = parse_args(argc, argv);
 
-    ull message_size = std::strtoul(argv[1], nullptr, 10);
-    ull iterations = std::strtoul(argv[2], nullptr, 10);
-
-    if (message_size == 0 || iterations == 0 || message_size > MAX_MSG_SIZE)
+    if (args.iterations == 0 || args.message_size > MAX_MSG_SIZE)
     {
-        std::cerr << "Both message_size and iterations must be positive integers and message_size must be less than "
+        std::cerr << "Iterations must be a positive integer and message_size must be less than "
                   << MAX_MSG_SIZE << "\n";
         return 1;
     }
 
-    std::cout << "Message size: " << message_size << " bytes\n"
-              << "Iterations: " << iterations << "\n";
+    std::cout << "Message size: " << args.message_size << " bytes\n"
+              << "Iterations: " << args.iterations << "\n";
 
-    // Message queue is identified by an integer
-    key_t mq_id;
+    int msq_id_server_client = create_mq(MSG_FILE_SERVER_CLIENT);
+    int msq_id_client_server = create_mq(MSG_FILE_CLIENT_SERVER);
 
-    // Creates a System V message queue
-    mq_id = create_mq();
-    ping_pong(mq_id);
+    ping_pong(msq_id_server_client, msq_id_client_server, args.iterations, args.message_size);
 
     return 0;
 }

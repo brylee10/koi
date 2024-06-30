@@ -17,7 +17,7 @@ Benchmarks::Benchmarks(const std::string &name, ull message_size) : name(name), 
 
 // Start a new benchmark iteration
 // Returns -1 on error, 0 otherwise.
-int Benchmarks::startIteration()
+int Benchmarks::start_iteration()
 {
     this->start_ns = get_time_ns();
     return 0;
@@ -25,7 +25,7 @@ int Benchmarks::startIteration()
 
 // Function to add a new benchmark iteration
 // Returns -1 on error, 0 otherwise.
-int Benchmarks::endIteration(ull num_messages)
+int Benchmarks::end_iteration(ull num_messages)
 {
     ull end_ns = get_time_ns();
     // End >= start, this should always be true since the clock is monotonically increasing
