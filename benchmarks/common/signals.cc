@@ -64,6 +64,8 @@ void SignalManager::wait_until_notify()
             break;
         }
         // Suspends execution until a signal is received
-        pause();
+        // Commented because this leads to a deadlock. If the signal is received
+        // before the thread is paused, the signal will be missed.
+        // pause();
     }
 }

@@ -20,7 +20,8 @@ void start_child(int pipefd[2], ull message_size, ull iterations)
     SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
 
     // Child process
-    close(pipefd[WRITE_FD]);
+    // Do not close write end to allow a full ping pong
+    // close(pipefd[WRITE_FD]);
 
     char *buffer = new char[message_size];
     for (ull i = 0; i < iterations; i++)
@@ -32,12 +33,13 @@ void start_child(int pipefd[2], ull message_size, ull iterations)
         {
             report_and_exit("read() failed");
         }
-        // else
-        // {
-        //     std::cout << buffer << std::endl;
-        // }
+
+        if (write(pipefd[WRITE_FD], buffer, message_size) < 0)
+        {
+            report_and_exit("write() failed");
+        }
         // Notify server that client is done reading and tracking benchmarks
-        // std::cout << "Notifying server that client is done reading\n";
+        // std::cout << "Notifying server that client is done reading and writing\n";
         signal_manager.notify();
     }
 
@@ -53,7 +55,8 @@ void start_parent(int pipefd[2], ull message_size, ull iterations)
     Benchmarks benchmarks(std::string("pipe"), message_size);
     SignalManager signal_manager(SignalManager::SignalTarget::SERVER);
     // Parent process
-    close(pipefd[READ_FD]);
+    // Do not close read end to allow a full ping pong
+    // close(pipefd[READ_FD]);
 
     char *buffer = new char[message_size];
 
@@ -74,8 +77,12 @@ void start_parent(int pipefd[2], ull message_size, ull iterations)
         benchmarks.start_iteration();
         signal_manager.notify();
         // Wait until client is done reading and tracking benchmarks
-        // std::cout << "Waiting for client to notify server that it is done reading\n";
+        // std::cout << "Waiting for client to notify server that it is done reading and writing\n";
         signal_manager.wait_until_notify();
+        if (read(pipefd[READ_FD], buffer, message_size) < 0)
+        {
+            report_and_exit("read() failed");
+        }
         // Special case where each iteration is 1 message
         benchmarks.end_iteration(1);
     }
