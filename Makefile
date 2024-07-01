@@ -12,14 +12,15 @@ BINDIR = bin
 
 # Source files
 COMMON_SRC = benchmarks/common/utils.cc benchmarks/common/bench.cc benchmarks/common/signals.cc \
-			 benchmarks/common/args.cc
-COMMON_OBJ = $(COMMON_SRC:benchmarks/common/%.cc=$(OBJDIR)/common/%.o)
+			 benchmarks/common/args.cc benchmarks/named_pipe/named_pipe.cc
+COMMON_OBJ = $(COMMON_SRC:benchmarks/%.cc=$(OBJDIR)/%.o)
 COMMON_OBJ_DIRS = $(dir $(COMMON_OBJ))
 
 BENCH_SRCS = benchmarks/pipe/pipe.cc benchmarks/processor_effects/cache_miss.cc \
 	benchmarks/processor_effects/cache_line.cc benchmarks/processor_effects/l1_l2.cc \
 	benchmarks/processor_effects/op_dep.cc benchmarks/message_queue/client.cc \
 	benchmarks/message_queue/server.cc benchmarks/message_queue/queue_ops.cc \
+	benchmarks/named_pipe/server.cc benchmarks/named_pipe/client.cc
 # e.g. benchmarks/pipe/pipe.cc -> obj/pipe/pipe.o
 BENCH_OBJS = $(BENCH_SRCS:benchmarks/%.cc=$(OBJDIR)/%.o)
 # e.g. obj/pipe/pipe.cc -> obj/pipe/

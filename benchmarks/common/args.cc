@@ -16,14 +16,14 @@ Args parse_args(int argc, char *argv[])
             break;
         default:
             std::cerr << "Usage: " << argv[0] << " -m <message_size> -i <iterations>\n";
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
     if (args.message_size == 0 || args.iterations == 0)
     {
         std::cerr << "Both message_size and iterations must be positive integers\n";
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return args;

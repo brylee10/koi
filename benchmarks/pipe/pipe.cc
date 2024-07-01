@@ -95,12 +95,6 @@ int main(int argc, char *argv[])
 {
     Args args = parse_args(argc, argv);
 
-    if (args.message_size == 0 || args.iterations == 0)
-    {
-        std::cerr << "Both message_size and iterations must be positive integers\n";
-        return 1;
-    }
-
     int pipefd[2];
     if (pipe(pipefd) != 0)
     {

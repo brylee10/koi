@@ -36,7 +36,7 @@ int create_mq_dir(const char *msg_file)
     if (mkdir(msg_file, 0666) == -1)
     {
         perror("mkdir");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return 0;
@@ -57,7 +57,7 @@ int create_mq(const char *msg_file)
     if (mq_key == -1)
     {
         perror("ftok");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Per: https://pubs.opengroup.org/onlinepubs/9699919799/functions/msgget.html
@@ -67,7 +67,7 @@ int create_mq(const char *msg_file)
     if (msq_id == -1)
     {
         perror("msgget");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return msq_id;

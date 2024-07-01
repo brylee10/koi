@@ -27,11 +27,12 @@ void ping_pong(key_t msq_id_server_client, key_t msq_id_client_server, ull itera
         // ```
         // Arguments:
         // 4. msgtyp: means the first message of type `msgtyp` in the queue is received
-        if (msgrcv(msq_id_server_client, msg_buf.data_ptr(), msg_buf.get_len(), SERVER_TYPE, 0) == -1)
+        //    unless the type is 0, in which case the first message in the queue is received
+        if (msgrcv(msq_id_server_client, msg_buf.data_ptr(), msg_buf.get_len(), 0, 0) == -1)
         {
             std::cerr << "Error Number: " << errno << std::endl;
             perror("msgrcv");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         msg_buf.data_ptr()->mtype = CLIENT_TYPE;

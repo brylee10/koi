@@ -13,7 +13,7 @@ void delete_message_queue(int msq_id)
     {
         std::cerr << "Error Number: " << errno << std::endl;
         perror("msgctl IPC_RMID");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     else
     {
@@ -28,7 +28,7 @@ void increase_queue_capacity(int msq_id, size_t new_capacity)
     if (msgctl(msq_id, IPC_STAT, &buf) == -1)
     {
         perror("msgctl IPC_STAT");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     buf.msg_qbytes = new_capacity;
@@ -36,14 +36,14 @@ void increase_queue_capacity(int msq_id, size_t new_capacity)
     if (msgctl(msq_id, IPC_SET, &buf) == -1)
     {
         perror("msgctl IPC_SET");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     struct msqid_ds buf2;
     if (msgctl(msq_id, IPC_STAT, &buf2) == -1)
     {
         perror("msgctl IPC_STAT");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (buf2.msg_qbytes != new_capacity)
@@ -51,7 +51,7 @@ void increase_queue_capacity(int msq_id, size_t new_capacity)
         std::cerr << "Failed to increase queue capacity to " << new_capacity << " bytes."
                   << "This may be beyond the maximum queue size. Try a lower capacity. "
                   << " Current capacity is " << buf2.msg_qbytes << " bytes." << std::endl;
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     std::cout << "Queue capacity increased to " << new_capacity << " bytes.\n";
@@ -64,7 +64,7 @@ void get_info(int msq_id)
     if (msgctl(msq_id, IPC_STAT, &buf) == -1)
     {
         perror("msgctl IPC_STAT");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     std::cout << "Message queue information:\n";
