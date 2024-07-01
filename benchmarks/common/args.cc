@@ -26,5 +26,14 @@ Args parse_args(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    if (args.message_size > MAX_MESSAGE_SIZE)
+    {
+        std::cerr << "Message size must be less than " << MAX_MESSAGE_SIZE << "\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Running with args: message_size=" << args.message_size
+              << ", iterations=" << args.iterations << std::endl;
+
     return args;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.hh"
+
 #include <getopt.h>
 #include <iostream>
 
