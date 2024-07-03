@@ -19,10 +19,12 @@ private:
     static constexpr int CLIENT_SIGNAL = SIGUSR2;
 
 public:
+    // Benchmarks are composed of a launcher, which starts the server and client processes
     enum class SignalTarget
     {
+        LAUNCHER,
         SERVER,
-        CLIENT
+        CLIENT,
     };
 
     SignalTarget target;

@@ -1,14 +1,16 @@
 #include "args.hh"
+#include "signals.hh"
 
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
+#include <thread>
+#include <format>
 
 int main(int argc, char *argv[])
 {
-    Args args = parse_args(argc, argv);
-    pid_t server_pid, client_pid;
+    LauncherArgs args = parse_launcher_args(argc, argv);
 
     // Convert integers to strings
     std::string message_size_str = std::to_string(args.message_size);
@@ -19,11 +21,13 @@ int main(int argc, char *argv[])
     const char *iterations = iterations_str.c_str();
 
     std::cout << "Message size and iterations: " << message_size << " " << iterations << std::endl;
-    (void)message_size;
-    (void)iterations;
+
+    // Used to set up signal handlers
+    SignalManager signal_manager(SignalManager::SignalTarget::LAUNCHER);
+    (void)signal_manager;
 
     // Fork to create the server process
-    server_pid = fork();
+    pid_t server_pid = fork();
     if (server_pid < 0)
     {
         std::cerr << "Failed to fork server process" << std::endl;
@@ -32,42 +36,51 @@ int main(int argc, char *argv[])
     }
     else if (server_pid == 0)
     {
+        std::string server_binary = std::format("bin/{}/server", args.benchmark_name);
         // Child process for server
-        execl("bin/shm/server", "server", "-m", message_size, "-i", iterations, (char *)NULL);
-        perror("execl");
+        execl(server_binary.c_str(), "server", "-m", message_size, "-i", iterations, (char *)NULL);
         // If execl returns, it means there was an error
+        perror("execl");
         std::cerr << "Failed to execute server process" << std::endl;
         return 1;
     }
 
     // Sleep for a bit to allow the server to start
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    // Fork to create the client process
-    client_pid = fork();
+    // Fork to create the child process
+    pid_t client_pid = fork();
     if (client_pid < 0)
     {
         std::cerr << "Failed to fork client process" << std::endl;
+        perror("fork");
         return 1;
     }
     else if (client_pid == 0)
     {
-        // Child process for client
-        execl("bin/shm/client", "client", "-m", message_size, "-i", iterations, (char *)NULL);
-        perror("execl");
+        std::string client_binary = std::format("bin/{}/client", args.benchmark_name);
+        std::cout << "Client binary: " << client_binary << std::endl;
+        // Client process
+        execl(client_binary.c_str(), "client", "-m", message_size, "-i", iterations, (char *)NULL);
         // If execl returns, it means there was an error
+        perror("execl");
         std::cerr << "Failed to execute client process" << std::endl;
         return 1;
     }
 
-    // Parent process
-    std::cout << "Server PID: " << server_pid << std::endl;
-    std::cout << "Client PID: " << client_pid << std::endl;
-
-    // Wait for server and client to finish
+    // Wait for the client and server to finish
     int status;
-    waitpid(server_pid, &status, 0);
-    waitpid(client_pid, &status, 0);
+    if (waitpid(server_pid, &status, 0) == -1)
+    {
+        perror("waitpid server");
+        return 1;
+    }
+
+    if (waitpid(client_pid, &status, 0) == -1)
+    {
+        perror("waitpid client");
+        return 1;
+    }
 
     return 0;
 }

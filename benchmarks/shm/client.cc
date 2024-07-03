@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h> /* For mode constants */
 #include <fcntl.h>    /* For O_* constants */
+#include <vector>
 
 int main(int argc, char *argv[])
 {
@@ -20,16 +21,31 @@ int main(int argc, char *argv[])
 
         SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
 
+        // Precompute all messages to avoid overhead during the benchmark.
+        std::vector<std::string> messages;
+        messages.reserve(args.iterations);
+        for (ull i = 0; i < args.iterations; i++)
+        {
+            std::string number = std::to_string(i);
+            // Create a string of the desired size filled with spaces
+            std::string message(args.message_size, '.');
+            std::copy(number.begin(), number.end(), message.begin());
+            messages.push_back(message);
+        }
+
         // Indicate to server client is ready
         signal_manager.notify();
         for (ull i = 0; i < args.iterations; i++)
         {
-            // signal_manager.wait_until_notify();
-            const std::string_view server_msg = shm_s2c.read_shm();
-            shm_c2s.write_shm(server_msg);
-            // Notify server that client has read message
+            std::string_view message = messages[i];
+            // std::cout << "Client iteration i: " << i << std::endl;
+            while (!shm_s2c.read_shm_until(message))
+            {
+                // Wait until server has written message
+                // std::cout << "Waiting for server to write message" << std::endl;
+            }
+            shm_c2s.write_shm(message);
         }
-        signal_manager.notify();
     }
     catch (const std::exception &e)
     {

@@ -28,6 +28,10 @@ SignalManager::SignalManager(SignalTarget target) : target(target)
 {
     switch (target)
     {
+    case SignalTarget::LAUNCHER:
+        signal(SERVER_SIGNAL, ignore_signal);
+        signal(CLIENT_SIGNAL, ignore_signal);
+        break;
     case SignalTarget::SERVER:
         signal(SERVER_SIGNAL, handle_server_signal);
         signal(CLIENT_SIGNAL, ignore_signal);

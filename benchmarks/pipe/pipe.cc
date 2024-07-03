@@ -15,90 +15,95 @@
 #define READ_FD 0
 #define WRITE_FD 1
 
-void start_child(int pipefd[2], ull message_size, ull iterations)
+void start_child(int pipefd_s2c[2], int pipefd_c2s[2], ull message_size, ull iterations)
 {
     SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
 
-    // Child process
-    // Do not close write end to allow a full ping pong
-    // close(pipefd[WRITE_FD]);
+    // Child process does not write to s2c, and does not read from c2s
+    close(pipefd_s2c[WRITE_FD]);
+    close(pipefd_c2s[READ_FD]);
 
+    // Notify server that client is ready to read (server will start first)
+    signal_manager.notify();
     char *buffer = new char[message_size];
     for (ull i = 0; i < iterations; i++)
     {
-        // Wait until server notifies client to read
-        // std::cout << "Waiting for server to notify client to read\n";
-        signal_manager.wait_until_notify();
-        if (read(pipefd[READ_FD], buffer, message_size) < 0)
+
+        if (read(pipefd_s2c[READ_FD], buffer, message_size) < 0)
         {
             report_and_exit("read() failed");
         }
 
-        if (write(pipefd[WRITE_FD], buffer, message_size) < 0)
+        if (write(pipefd_c2s[WRITE_FD], buffer, message_size) < 0)
         {
             report_and_exit("write() failed");
         }
-        // Notify server that client is done reading and tracking benchmarks
-        // std::cout << "Notifying server that client is done reading and writing\n";
-        signal_manager.notify();
     }
 
     delete[] buffer;
-    close(pipefd[READ_FD]);
+    close(pipefd_s2c[READ_FD]);
+    close(pipefd_c2s[WRITE_FD]);
 }
 
-void start_parent(int pipefd[2], ull message_size, ull iterations)
+void start_parent(int pipefd_s2c[2], int pipefd_c2s[2], ull message_size, ull iterations)
 {
-    // Sleep for 0.5 sec to allow child to spawn
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     Benchmarks benchmarks(std::string("pipe"), message_size);
     SignalManager signal_manager(SignalManager::SignalTarget::SERVER);
-    // Parent process
-    // Do not close read end to allow a full ping pong
-    // close(pipefd[READ_FD]);
+    // Parent process does not read from s2c, and does not write to c2s
+    close(pipefd_s2c[READ_FD]);
+    close(pipefd_c2s[WRITE_FD]);
 
     char *buffer = new char[message_size];
 
     // Generate a string with `message_size` number of bytes
     std::string text = std::string(message_size, 'a');
+    if (text.copy(buffer, message_size, 0) != message_size)
+    {
+        report_and_exit("copy() did not copy full message size");
+    }
+
+    // Wait for client to notify that it has joined
+    signal_manager.wait_until_notify();
     for (ull i = 0; i < iterations; i++)
     {
-        if (text.copy(buffer, message_size, 0) != message_size)
-        {
-            report_and_exit("copy() did not copy full message size");
-        }
-        if (write(pipefd[WRITE_FD], buffer, message_size) < 0)
+        // Benchmarks server to client write
+        benchmarks.start_iteration();
+        if (write(pipefd_s2c[WRITE_FD], buffer, message_size) < 0)
         {
             report_and_exit("write() failed");
         }
-        // Notify client to read
-        // std::cout << "Notifying client to read\n";
-        benchmarks.start_iteration();
-        signal_manager.notify();
-        // Wait until client is done reading and tracking benchmarks
-        // std::cout << "Waiting for client to notify server that it is done reading and writing\n";
-        signal_manager.wait_until_notify();
-        if (read(pipefd[READ_FD], buffer, message_size) < 0)
+        // A successful read implies the client finished its read and wrote data
+        // "If a process attempts to read from an empty pipe, then read(2)
+        // will block until data is available."
+        // https://man7.org/linux/man-pages/man7/pipe.7.html
+        if (read(pipefd_c2s[READ_FD], buffer, message_size) < 0)
         {
             report_and_exit("read() failed");
         }
-        // Special case where each iteration is 1 message
+        // Each iteration is 1 ping pong message
         benchmarks.end_iteration(1);
     }
 
     delete[] buffer;
-    close(pipefd[WRITE_FD]);
+    close(pipefd_s2c[WRITE_FD]);
+    close(pipefd_c2s[READ_FD]);
 }
 
 int main(int argc, char *argv[])
 {
     Args args = parse_args(argc, argv);
 
-    int pipefd[2];
-    if (pipe(pipefd) != 0)
+    int pipefd_s2c[2];
+    if (pipe(pipefd_s2c) != 0)
     {
-        report_and_exit("pipe() failed");
+        report_and_exit("pipe() server to client failed");
+        return 1;
+    }
+
+    int pipefd_c2s[2];
+    if (pipe(pipefd_c2s) != 0)
+    {
+        report_and_exit("pipe() client to server failed");
         return 1;
     }
 
@@ -110,13 +115,15 @@ int main(int argc, char *argv[])
 
     if (pid == 0)
     {
+        // Allow time for the server to start first
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         // Child process
-        start_child(pipefd, args.message_size, args.iterations);
+        start_child(pipefd_s2c, pipefd_c2s, args.message_size, args.iterations);
     }
     else
     {
         // Parent process
-        start_parent(pipefd, args.message_size, args.iterations);
+        start_parent(pipefd_s2c, pipefd_c2s, args.message_size, args.iterations);
     }
 
     return 0;

@@ -16,16 +16,16 @@ void ping_pong(key_t msq_id_server_client, key_t msq_id_client_server, ull itera
 {
     SignalManager signal_manager(SignalManager::SignalTarget::SERVER);
     Benchmarks benchmarks(std::string("message_queue"), message_size);
-    // Message msg = Message<char>(message_size);
     MsgbufRAII msg_buf(message_size, SERVER_TYPE);
 
-    signal_manager.notify();
+    // Wait until client has joined
+    signal_manager.wait_until_notify();
     for (ull i = 0; i < iterations; i++)
     {
         benchmarks.start_iteration();
         // Send the message to the client
         // std::cout << "Sending message " << i << " to client" << std::endl;
-        assert(msg_buf.get_len() == message_size);
+        ASSERT(msg_buf.get_len() == message_size);
         // IPC_NOWAIT - return immediately if the message cannot be sent (e.g. queue full)
         // Default queue size is 16KB on Linux: https://linux.die.net/man/2/msgsnd (see `MSGMNB`)
         // On MacOS, the default appears to be 2KB
@@ -45,7 +45,11 @@ void ping_pong(key_t msq_id_server_client, key_t msq_id_client_server, ull itera
         // Arguments:
         // 4. msgtyp: means the first message of type `msgtyp` in the queue is received
         //    unless the type is 0, in which case the first message in the queue is received
-        // std::cout << "Receiving message " << i << " from client" << std::endl;
+        // This call is blocking:
+        // "*  If (msgflg & IPC_NOWAIT) is 0, the calling thread shall
+        // suspend execution until one of the following occurs:
+        // --  A message of the desired type is placed on the queue.:
+        // https://man7.org/linux/man-pages/man3/msgrcv.3p.html
         if (msgrcv(msq_id_client_server, msg_buf.data_ptr(), msg_buf.get_len(), 0, 0) == -1)
         {
             perror("msgrcv");

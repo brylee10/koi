@@ -9,12 +9,12 @@
 // Reads a message from the message queue and writes it back to the server
 void ping_pong(key_t msq_id_server_client, key_t msq_id_client_server, ull iterations, ull message_size)
 {
-    // SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
+    SignalManager signal_manager(SignalManager::SignalTarget::CLIENT);
     // Message msg = Message<char>(message_size);
     MsgbufRAII msg_buf(message_size, CLIENT_TYPE);
 
-    std::cout << "Client waiting for server to notify\n";
-    // signal_manager.wait_until_notify();
+    // Notify server that client has joined
+    signal_manager.notify();
     for (ull i = 0; i < iterations; i++)
     {
         // Send the message to the client
