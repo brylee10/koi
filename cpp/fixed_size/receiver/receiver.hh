@@ -1,3 +1,4 @@
+#pragma once
 
 // An IPC receiver
 template <typename T>

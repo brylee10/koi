@@ -1,8 +1,19 @@
 .vscode
 # Built binaries
 bin
+# Build libraries
+lib
 # Object files
 obj
 
 # MacOS
 .DS_Store
+
+# Cmake
+CTestTestfile.cmake
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles
+_deps
+*.cmake
+*.tcl
