@@ -1,6 +1,13 @@
 #pragma once
 
 #include <string>
+#include <optional>
+
+enum KoiQueueRet
+{
+    OK = 0,
+    QUEUE_FULL = 1,
+};
 
 // This container holds no type information and only passes raw bytes
 struct ControlBlock
@@ -18,13 +25,13 @@ struct MessageHeader
     size_t message_sz;
 };
 
-struct Message
-{
-};
-
 constexpr size_t CACHE_LINE_BYTES = 64;
-constexpr size_t MAX_MESSAGE_SIZE_BYTES = CACHE_LINE_BYTES - sizeof(MessageHeader);
+// Maximum size of message message block selected as a multiple of `CACHE_LINE_BYTES`,
+// arbitrarily set to 2^10 * `CACHE_LINE_BYTES`
+constexpr size_t MAX_MESSAGE_BLOCK_BYTES = (1 << 10) * CACHE_LINE_BYTES;
+constexpr size_t MAX_MESSAGE_SIZE_BYTES = MAX_MESSAGE_BLOCK_BYTES - sizeof(MessageHeader);
 
+// Terminology: "message block" = "message header" + "message"
 template <typename T>
 class KoiQueue
 {
@@ -34,9 +41,19 @@ public:
     ~KoiQueue();
 
     void init_shm();
-    void send(T message);
-    T recv();
+    // Returns `KoiQueueRet::QUEUE_FULL` if the queue is full, otherwise `KoiQueueRet::OK`
+    KoiQueueRet send(T message);
+    std::optional<T> recv();
+    // Returns total size of the shm segment
     size_t shm_size() const;
+    // Returns total bytes remaining in the shm segment
+    size_t shm_remaining_bytes() const;
+    // Returns the message block size in bytes
+    size_t message_block_sz_bytes() const;
+    // Returns the current queue size in bytes
+    size_t curr_queue_sz_bytes() const;
+    // Returns if the queue is full
+    bool is_full() const;
 
 private:
     ControlBlock control_block_;
@@ -51,6 +68,10 @@ private:
     };
 
     ShmMetadata shm_metadata_;
+    // The size of a "message block" (the message header + the message itself)
+    size_t message_block_sz_;
+    // Current number of message blocks in the queue
+    size_t message_block_cnt_;
 };
 
 #include "koi_queue.tcc"

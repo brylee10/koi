@@ -5,7 +5,7 @@ project(Koi LANGUAGES CXX VERSION 0.0.1)
 enable_testing()
 
 # Set the mandatory C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set the output directories
