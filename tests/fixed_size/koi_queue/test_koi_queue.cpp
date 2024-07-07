@@ -9,7 +9,9 @@
 #include <fcntl.h>    /* For O_* constants */
 #include <unistd.h>
 
+// Platform specific
 // MacOS M1 has a page size of 16KB
+// `getconf PAGE_SIZE` to check
 constexpr size_t PAGE_SIZE = 1 << 14;
 constexpr size_t SHM_SIZE_PAGES = 1 << 1;
 constexpr size_t SHM_SIZE = PAGE_SIZE * SHM_SIZE_PAGES;
@@ -19,8 +21,7 @@ TEST_CASE("KoiQueue Lifecycle", "[KoiQueue]")
 {
     SECTION("Initialization")
     {
-        KoiQueue<char> queue(SHM_NAME, SHM_SIZE);
-        queue.init_shm();
+        KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
 
         // Sanity check: ensure the shared memory is correctly initialized
         struct stat sb;
@@ -29,15 +30,17 @@ TEST_CASE("KoiQueue Lifecycle", "[KoiQueue]")
         fstat(shm_fd, &sb);
         close(shm_fd);
 
-        // This will match as long as `SHM_SIZE` is a multiple of the page size
-        REQUIRE(sb.st_size == static_cast<off_t>(SHM_SIZE));
+        // This will match as long as `expected_shm_size` is a multiple of the page size
+        // Shared memory size from st_size is `SHM_SIZE + CACHE_LINE_BYTES` rounded up to
+        // the nearest PAGE_SIZE, where CACHE_LINE_BYTES is the size allocated to the control block
+        size_t expected_shm_size = (SHM_SIZE + CACHE_LINE_BYTES + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+        REQUIRE(sb.st_size == static_cast<off_t>(expected_shm_size));
     }
 
     SECTION("Destructor")
     {
         {
-            KoiQueue<char> queue(SHM_NAME, SHM_SIZE);
-            queue.init_shm();
+            KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
         } // Destructor called here
 
         // Ensure the shared memory was unlinked
@@ -46,6 +49,7 @@ TEST_CASE("KoiQueue Lifecycle", "[KoiQueue]")
         REQUIRE(errno == ENOENT);
     }
 }
+
 TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
 {
     struct Message
@@ -56,13 +60,12 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
 
     SECTION("Send Recv Single")
     {
-        KoiQueue<Message> queue(SHM_NAME, SHM_SIZE);
-        queue.init_shm();
+        KoiQueueRAII<Message> queue(SHM_NAME, SHM_SIZE);
 
         Message msg = {1, 2};
-        queue.send(msg);
+        (*queue).send(msg);
 
-        auto recv_msg = queue.recv();
+        auto recv_msg = (*queue).recv();
         REQUIRE(recv_msg.has_value());
         REQUIRE(recv_msg.value().x == 1);
         REQUIRE(recv_msg.value().y == 2);
@@ -70,19 +73,18 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
 
     SECTION("Send Recv Multiple")
     {
-        KoiQueue<Message> queue(SHM_NAME, SHM_SIZE);
-        queue.init_shm();
+        KoiQueueRAII<Message> queue(SHM_NAME, SHM_SIZE);
 
         std::vector<Message> msgs;
         for (int i = 0; i < 10; ++i)
         {
             msgs.push_back({i, i});
-            queue.send(msgs.back());
+            (*queue).send(msgs.back());
         }
 
         for (int i = 0; i < 10; ++i)
         {
-            auto recv_msg = queue.recv();
+            auto recv_msg = (*queue).recv();
             REQUIRE(recv_msg.has_value());
             REQUIRE(recv_msg.value().x == msgs[i].x);
             REQUIRE(recv_msg.value().y == msgs[i].y);
@@ -94,35 +96,34 @@ TEST_CASE("KoiQueue Error Handling", "[KoiQueue]")
 {
     SECTION("Queue Full")
     {
-        KoiQueue<int> queue(SHM_NAME, SHM_SIZE);
-        queue.init_shm();
+        KoiQueueRAII<int> queue(SHM_NAME, SHM_SIZE);
 
-        REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE);
+        REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE);
 
         // Do a few send and recvs first
         for (int i = 0; i < 5; ++i)
         {
-            queue.send(i);
-            auto recv_msg = queue.recv();
+            (*queue).send(i);
+            auto recv_msg = (*queue).recv();
             REQUIRE(recv_msg.has_value());
             REQUIRE(recv_msg.value() == i);
         }
 
-        REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE);
+        REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE);
 
         // Fill the queue
-        size_t max_queue_messages = SHM_SIZE / queue.message_block_sz_bytes();
+        size_t max_queue_messages = SHM_SIZE / (*queue).message_block_sz_bytes();
         for (int i = 0; i < max_queue_messages; ++i)
         {
-            queue.send(i);
-            REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE - (i + 1) * queue.message_block_sz_bytes());
+            (*queue).send(i);
+            REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE - (i + 1) * (*queue).message_block_sz_bytes());
         }
 
         // The sent messages should exactly fill the queue
-        REQUIRE(queue.shm_remaining_bytes() == 0);
+        REQUIRE((*queue).shm_remaining_bytes() == 0);
 
         // Attempt to send to a full queue
-        REQUIRE(queue.send(0) == KoiQueueRet::QUEUE_FULL);
+        REQUIRE((*queue).send(0) == KoiQueueRet::QUEUE_FULL);
     }
 
     // The below would not compile because the KoiQueue constructor statically checks
@@ -140,20 +141,20 @@ TEST_CASE("KoiQueue Sanity Checks", "[KoiQueue]")
     SECTION("Minimum SHM size")
     {
         // Ensure the shared memory size is at least the size of the control block
-        REQUIRE_THROWS_AS(KoiQueue<char>(SHM_NAME, sizeof(ControlBlock) - 1), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, sizeof(ControlBlock) - 1), std::invalid_argument);
     }
 
     SECTION("Message block size rounding")
     {
         // Test message block size is the `sizeof(T)` rounded up to the nearest cache line size
-        KoiQueue<char> queue(SHM_NAME, SHM_SIZE);
-        REQUIRE(queue.message_block_sz_bytes() == CACHE_LINE_BYTES);
+        KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
+        REQUIRE((*queue).message_block_sz_bytes() == CACHE_LINE_BYTES);
     }
 
     SECTION("Valid byte buffer sizes")
     {
         // Check a buffer size that is not a power of 2 throws an exception
-        REQUIRE_THROWS_AS(KoiQueue<char>(SHM_NAME, CACHE_LINE_BYTES - 1), std::invalid_argument);
-        REQUIRE_THROWS_AS(KoiQueue<char>(SHM_NAME, CACHE_LINE_BYTES * 6), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, CACHE_LINE_BYTES - 1), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, CACHE_LINE_BYTES * 6), std::invalid_argument);
     }
 }
