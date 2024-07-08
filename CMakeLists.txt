@@ -27,9 +27,12 @@ FetchContent_MakeAvailable(catch2)
 # https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#usage
 find_package(Catch2 REQUIRED)
 
-add_executable(test_koi_queue tests/fixed_size/koi_queue/test_koi_queue.cpp)
-target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue)
-target_include_directories(test_koi_queue PRIVATE cpp/fixed_size/koi_queue benchmarks/common)
+add_executable(test_koi_queue 
+    tests/fixed_size/koi_queue/test_single_thread.cpp 
+    tests/fixed_size/koi_queue/test_multiprocess.cpp
+)
+target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue KoiCommonUtils)
+target_include_directories(test_koi_queue PRIVATE cpp/fixed_size/koi_queue benchmarks/common tests)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
@@ -50,3 +53,6 @@ FetchContent_MakeAvailable(spdlog)
 add_library(KoiQueue cpp/common/logger.cc)
 target_include_directories(KoiQueue PUBLIC cpp/fixed_size/koi_queue cpp/common)
 target_link_libraries(KoiQueue PUBLIC spdlog::spdlog)
+
+add_library(KoiCommonUtils benchmarks/common/signals.cc)
+target_include_directories(KoiCommonUtils PUBLIC cpp/common)

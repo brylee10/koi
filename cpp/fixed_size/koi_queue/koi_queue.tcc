@@ -21,12 +21,13 @@ constexpr int SHM_EXISTS = 1;
 template <typename T>
 KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
 {
+    load_spdlog_level();
     // `send`/`recv` will do a bitwise memcpy of T into the shared memory
     constexpr size_t message_sz = sizeof(T);
     static_assert(std::is_trivially_copyable<T>::value, "T must be trivially copyable");
     static_assert(message_sz <= MAX_MESSAGE_SIZE_BYTES, "Message size is larger than the max message size");
 
-    load_spdlog_level();
+    spdlog::debug("Constructing KoiQueue with shm_name: {}, user_shm_size: {}", shm_name, user_shm_size);
     shm_metadata_.shm_name = std::string(shm_name);
 
     // The `user_shm_size` must be a power of 2
@@ -127,6 +128,7 @@ template <typename T>
 int KoiQueue<T>::open_shm()
 {
     spdlog::debug("Checking if shared memory already exists");
+    int shm_status = SHM_CREATED;
     int shm_fd = shm_open(shm_metadata_.shm_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666);
     if (shm_fd == -1)
     {
@@ -139,7 +141,7 @@ int KoiQueue<T>::open_shm()
                 perror("shm_open");
                 throw std::runtime_error("Failed to open shared memory");
             }
-            return SHM_EXISTS;
+            shm_status = SHM_EXISTS;
         }
         else
         {
@@ -147,9 +149,8 @@ int KoiQueue<T>::open_shm()
             throw std::runtime_error("Failed to create shared memory");
         }
     }
-
     shm_metadata_.shm_fd = shm_fd;
-    return SHM_CREATED;
+    return shm_status;
 }
 
 // Returns 0 on success, throws an error otherwise
@@ -164,13 +165,12 @@ int KoiQueue<T>::init_shm()
     spdlog::debug("ftruncate with total_shm_size: {}", total_shm_size);
     if (ftruncate(shm_metadata_.shm_fd, total_shm_size) == -1)
     {
-        spdlog::error("ftruncate failed with errno: {}", errno);
-        spdlog::error("fd: {}, total_shm_size: {}", shm_metadata_.shm_fd, total_shm_size);
-
         // `ftruncate` on an already open file descriptor can fail with EINVAL
         // https://stackoverflow.com/questions/20320742/ftruncate-failed-at-the-second-time
         if (errno != EINVAL)
         {
+            spdlog::error("ftruncate failed with errno: {}", errno);
+            spdlog::error("fd: {}, total_shm_size: {}", shm_metadata_.shm_fd, total_shm_size);
             perror("ftruncate");
             throw std::runtime_error("ftruncate failed");
         }
@@ -223,7 +223,7 @@ KoiQueueRet KoiQueue<T>::send(T message)
 template <typename T>
 std::optional<T> KoiQueue<T>::recv()
 {
-    if (control_block_->read_offset == control_block_->write_offset)
+    if (is_empty())
     {
         return std::nullopt;
     }
@@ -286,4 +286,10 @@ bool KoiQueue<T>::is_full() const
     spdlog::debug("curr_queue_sz: {}, message_block_cnt: {}, user_shm_size: {}",
                   curr_queue_sz, control_block_->message_block_cnt.load(), control_block_->user_shm_size);
     return curr_queue_sz >= control_block_->user_shm_size && control_block_->message_block_cnt != 0;
+}
+
+template <typename T>
+bool KoiQueue<T>::is_empty() const
+{
+    return control_block_->message_block_cnt == 0;
 }

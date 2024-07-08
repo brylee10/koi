@@ -69,6 +69,8 @@ public:
     size_t curr_queue_sz_bytes() const;
     // Returns if the queue is full
     bool is_full() const;
+    // Returns if the queue is empty
+    bool is_empty() const;
 
 private:
     // The size of a "message block" (the message header + the message itself)

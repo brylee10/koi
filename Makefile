@@ -517,6 +517,19 @@ KoiQueue/fast:
 .PHONY : KoiQueue/fast
 
 #=============================================================================
+# Target rules for targets named KoiCommonUtils
+
+# Build rule for target.
+KoiCommonUtils: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 KoiCommonUtils
+.PHONY : KoiCommonUtils
+
+# fast build rule for target.
+KoiCommonUtils/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/build
+.PHONY : KoiCommonUtils/fast
+
+#=============================================================================
 # Target rules for targets named Catch2
 
 # Build rule for target.
@@ -555,6 +568,30 @@ spdlog/fast:
 	$(MAKE) $(MAKESILENT) -f _deps/spdlog-build/CMakeFiles/spdlog.dir/build.make _deps/spdlog-build/CMakeFiles/spdlog.dir/build
 .PHONY : spdlog/fast
 
+benchmarks/common/signals.o: benchmarks/common/signals.cc.o
+.PHONY : benchmarks/common/signals.o
+
+# target to build an object file
+benchmarks/common/signals.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.o
+.PHONY : benchmarks/common/signals.cc.o
+
+benchmarks/common/signals.i: benchmarks/common/signals.cc.i
+.PHONY : benchmarks/common/signals.i
+
+# target to preprocess a source file
+benchmarks/common/signals.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.i
+.PHONY : benchmarks/common/signals.cc.i
+
+benchmarks/common/signals.s: benchmarks/common/signals.cc.s
+.PHONY : benchmarks/common/signals.s
+
+# target to generate assembly for a file
+benchmarks/common/signals.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.s
+.PHONY : benchmarks/common/signals.cc.s
+
 cpp/common/logger.o: cpp/common/logger.cc.o
 .PHONY : cpp/common/logger.o
 
@@ -579,29 +616,53 @@ cpp/common/logger.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiQueue.dir/build.make CMakeFiles/KoiQueue.dir/cpp/common/logger.cc.s
 .PHONY : cpp/common/logger.cc.s
 
-tests/fixed_size/koi_queue/test_koi_queue.o: tests/fixed_size/koi_queue/test_koi_queue.cpp.o
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.o
+tests/fixed_size/koi_queue/test_multiprocess.o: tests/fixed_size/koi_queue/test_multiprocess.cpp.o
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.o
 
 # target to build an object file
-tests/fixed_size/koi_queue/test_koi_queue.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_koi_queue.cpp.o
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.cpp.o
+tests/fixed_size/koi_queue/test_multiprocess.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_multiprocess.cpp.o
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.cpp.o
 
-tests/fixed_size/koi_queue/test_koi_queue.i: tests/fixed_size/koi_queue/test_koi_queue.cpp.i
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.i
+tests/fixed_size/koi_queue/test_multiprocess.i: tests/fixed_size/koi_queue/test_multiprocess.cpp.i
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.i
 
 # target to preprocess a source file
-tests/fixed_size/koi_queue/test_koi_queue.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_koi_queue.cpp.i
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.cpp.i
+tests/fixed_size/koi_queue/test_multiprocess.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_multiprocess.cpp.i
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.cpp.i
 
-tests/fixed_size/koi_queue/test_koi_queue.s: tests/fixed_size/koi_queue/test_koi_queue.cpp.s
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.s
+tests/fixed_size/koi_queue/test_multiprocess.s: tests/fixed_size/koi_queue/test_multiprocess.cpp.s
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.s
 
 # target to generate assembly for a file
-tests/fixed_size/koi_queue/test_koi_queue.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_koi_queue.cpp.s
-.PHONY : tests/fixed_size/koi_queue/test_koi_queue.cpp.s
+tests/fixed_size/koi_queue/test_multiprocess.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_multiprocess.cpp.s
+.PHONY : tests/fixed_size/koi_queue/test_multiprocess.cpp.s
+
+tests/fixed_size/koi_queue/test_single_thread.o: tests/fixed_size/koi_queue/test_single_thread.cpp.o
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.o
+
+# target to build an object file
+tests/fixed_size/koi_queue/test_single_thread.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_single_thread.cpp.o
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.cpp.o
+
+tests/fixed_size/koi_queue/test_single_thread.i: tests/fixed_size/koi_queue/test_single_thread.cpp.i
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.i
+
+# target to preprocess a source file
+tests/fixed_size/koi_queue/test_single_thread.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_single_thread.cpp.i
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.cpp.i
+
+tests/fixed_size/koi_queue/test_single_thread.s: tests/fixed_size/koi_queue/test_single_thread.cpp.s
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.s
+
+# target to generate assembly for a file
+tests/fixed_size/koi_queue/test_single_thread.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_koi_queue.dir/build.make CMakeFiles/test_koi_queue.dir/tests/fixed_size/koi_queue/test_single_thread.cpp.s
+.PHONY : tests/fixed_size/koi_queue/test_single_thread.cpp.s
 
 # Help Target
 help:
@@ -642,15 +703,22 @@ help:
 	@echo "... NightlyUpdate"
 	@echo "... Catch2"
 	@echo "... Catch2WithMain"
+	@echo "... KoiCommonUtils"
 	@echo "... KoiQueue"
 	@echo "... spdlog"
 	@echo "... test_koi_queue"
+	@echo "... benchmarks/common/signals.o"
+	@echo "... benchmarks/common/signals.i"
+	@echo "... benchmarks/common/signals.s"
 	@echo "... cpp/common/logger.o"
 	@echo "... cpp/common/logger.i"
 	@echo "... cpp/common/logger.s"
-	@echo "... tests/fixed_size/koi_queue/test_koi_queue.o"
-	@echo "... tests/fixed_size/koi_queue/test_koi_queue.i"
-	@echo "... tests/fixed_size/koi_queue/test_koi_queue.s"
+	@echo "... tests/fixed_size/koi_queue/test_multiprocess.o"
+	@echo "... tests/fixed_size/koi_queue/test_multiprocess.i"
+	@echo "... tests/fixed_size/koi_queue/test_multiprocess.s"
+	@echo "... tests/fixed_size/koi_queue/test_single_thread.o"
+	@echo "... tests/fixed_size/koi_queue/test_single_thread.i"
+	@echo "... tests/fixed_size/koi_queue/test_single_thread.s"
 .PHONY : help
 
 

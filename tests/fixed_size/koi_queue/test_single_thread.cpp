@@ -1,5 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "koi_queue.hh"
+#include "test_utils.hh"
 
 // No longer <catch2/catch.hpp> since v3
 // https://github.com/catchorg/Catch2/blob/devel/docs/migrate-v2-to-v3.md#how-to-migrate-projects-from-v2-to-v3
@@ -9,23 +10,16 @@
 #include <fcntl.h>    /* For O_* constants */
 #include <unistd.h>
 
-// Platform specific
-// MacOS M1 has a page size of 16KB
-// `getconf PAGE_SIZE` to check
-constexpr size_t PAGE_SIZE = 1 << 14;
-constexpr size_t SHM_SIZE_PAGES = 1 << 1;
-constexpr size_t SHM_SIZE = PAGE_SIZE * SHM_SIZE_PAGES;
-const std::string SHM_NAME = "koi_queue";
-
-TEST_CASE("KoiQueue Lifecycle", "[KoiQueue]")
+TEST_CASE("KoiQueue Lifecycle", "[KoiQueue][SingleThread]")
 {
+    const std::string shm_name = generate_unique_shm_name();
     SECTION("Initialization")
     {
-        KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
+        KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
 
         // Sanity check: ensure the shared memory is correctly initialized
         struct stat sb;
-        int shm_fd = shm_open(SHM_NAME.c_str(), O_RDONLY, 0666);
+        int shm_fd = shm_open(shm_name.c_str(), O_RDONLY, 0666);
         REQUIRE(shm_fd != -1);
         fstat(shm_fd, &sb);
         close(shm_fd);
@@ -40,18 +34,19 @@ TEST_CASE("KoiQueue Lifecycle", "[KoiQueue]")
     SECTION("Destructor")
     {
         {
-            KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
+            KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
         } // Destructor called here
 
         // Ensure the shared memory was unlinked
-        int shm_fd = shm_open(SHM_NAME.c_str(), O_RDONLY, 0666);
+        int shm_fd = shm_open(shm_name.c_str(), O_RDONLY, 0666);
         REQUIRE(shm_fd == -1);
         REQUIRE(errno == ENOENT);
     }
 }
 
-TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
+TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
 {
+    const std::string shm_name = generate_unique_shm_name();
     struct Message
     {
         int x;
@@ -60,7 +55,7 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
 
     SECTION("Send Recv Single")
     {
-        KoiQueueRAII<Message> queue(SHM_NAME, SHM_SIZE);
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
 
         Message msg = {1, 2};
         (*queue).send(msg);
@@ -73,7 +68,7 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
 
     SECTION("Send Recv Multiple")
     {
-        KoiQueueRAII<Message> queue(SHM_NAME, SHM_SIZE);
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
 
         std::vector<Message> msgs;
         for (int i = 0; i < 10; ++i)
@@ -92,11 +87,12 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue]")
     }
 }
 
-TEST_CASE("KoiQueue Error Handling", "[KoiQueue]")
+TEST_CASE("KoiQueue Error Handling", "[KoiQueue][SingleThread]")
 {
+    const std::string shm_name = generate_unique_shm_name();
     SECTION("Queue Full")
     {
-        KoiQueueRAII<int> queue(SHM_NAME, SHM_SIZE);
+        KoiQueueRAII<int> queue(shm_name, SHM_SIZE);
 
         REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE);
 
@@ -136,25 +132,32 @@ TEST_CASE("KoiQueue Error Handling", "[KoiQueue]")
     // }
 }
 
-TEST_CASE("KoiQueue Sanity Checks", "[KoiQueue]")
+TEST_CASE("Sanity Checks", "[KoiQueue]")
 {
+    const std::string shm_name = generate_unique_shm_name();
     SECTION("Minimum SHM size")
     {
         // Ensure the shared memory size is at least the size of the control block
-        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, sizeof(ControlBlock) - 1), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(shm_name, sizeof(ControlBlock) - 1), std::invalid_argument);
     }
 
     SECTION("Message block size rounding")
     {
         // Test message block size is the `sizeof(T)` rounded up to the nearest cache line size
-        KoiQueueRAII<char> queue(SHM_NAME, SHM_SIZE);
+        KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
         REQUIRE((*queue).message_block_sz_bytes() == CACHE_LINE_BYTES);
     }
 
     SECTION("Valid byte buffer sizes")
     {
         // Check a buffer size that is not a power of 2 throws an exception
-        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, CACHE_LINE_BYTES - 1), std::invalid_argument);
-        REQUIRE_THROWS_AS(KoiQueueRAII<char>(SHM_NAME, CACHE_LINE_BYTES * 6), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(shm_name, CACHE_LINE_BYTES - 1), std::invalid_argument);
+        REQUIRE_THROWS_AS(KoiQueueRAII<char>(shm_name, CACHE_LINE_BYTES * 6), std::invalid_argument);
+    }
+
+    SECTION("Queue is empty on creation")
+    {
+        KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
+        REQUIRE((*queue).is_empty());
     }
 }
