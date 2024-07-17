@@ -1,6 +1,7 @@
 #include "koi_queue.hh"
 #include "test_utils.hh"
 #include "signals.hh"
+#include "receiver.hh"
 
 #include <catch2/catch_all.hpp>
 #include <chrono>
@@ -279,4 +280,16 @@ TEST_CASE("Send Recv Two Full Queues", "[KoiQueue][MultiProcess]")
         perror("waitpid");
         exit(EXIT_FAILURE);
     }
+}
+
+TEST_CASE("Sender Receiver Simple", "[KoiQueue][MultiProcess]")
+{
+    // Tests the Sender and Receiver abstractions in a simple case
+    const std::string shm_name = generate_unique_shm_name();
+    struct Message
+    {
+        unsigned int x;
+        unsigned int y;
+    };
+    Receiver<Message> rx = Receiver<Message>(shm_name, SHM_SIZE);
 }

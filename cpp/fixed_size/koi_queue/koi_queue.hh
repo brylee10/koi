@@ -54,9 +54,6 @@ public:
     KoiQueue(const std::string_view name, size_t buffer_bytes);
     ~KoiQueue();
 
-    // Returns `KoiQueueRet::QUEUE_FULL` if the queue is full, otherwise `KoiQueueRet::OK`
-    KoiQueueRet send(T message);
-    std::optional<T> recv();
     // Returns total size of the shm segment that the user allocated
     // This is caveated by the fact the actual size of the shm segment includes the control block,
     // but this is opaque to the user
@@ -71,6 +68,11 @@ public:
     bool is_full() const;
     // Returns if the queue is empty
     bool is_empty() const;
+
+protected:
+    // Returns `KoiQueueRet::QUEUE_FULL` if the queue is full, otherwise `KoiQueueRet::OK`
+    KoiQueueRet send(T message);
+    std::optional<T> recv();
 
 private:
     // The size of a "message block" (the message header + the message itself)

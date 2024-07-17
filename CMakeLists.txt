@@ -32,7 +32,11 @@ add_executable(test_koi_queue
     tests/fixed_size/koi_queue/test_multiprocess.cpp
 )
 target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue KoiCommonUtils)
-target_include_directories(test_koi_queue PRIVATE cpp/fixed_size/koi_queue benchmarks/common tests)
+target_include_directories(test_koi_queue PRIVATE 
+    cpp/fixed_size/koi_queue 
+    benchmarks/common 
+    cpp/fixed_size/receiver tests
+)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
@@ -50,9 +54,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 # Build libraries
-add_library(KoiQueue cpp/common/logger.cc)
-target_include_directories(KoiQueue PUBLIC cpp/fixed_size/koi_queue cpp/common)
-target_link_libraries(KoiQueue PUBLIC spdlog::spdlog)
-
-add_library(KoiCommonUtils benchmarks/common/signals.cc)
+add_library(KoiCommonUtils benchmarks/common/signals.cc cpp/common/logger.cc)
 target_include_directories(KoiCommonUtils PUBLIC cpp/common)
+target_link_libraries(KoiCommonUtils PUBLIC spdlog::spdlog)
+
+add_library(KoiQueue INTERFACE)
+target_include_directories(KoiQueue INTERFACE cpp/fixed_size/koi_queue cpp/common)
+target_link_libraries(KoiQueue INTERFACE KoiCommonUtils)
+
+add_library(KoiReceiver INTERFACE)
+target_link_libraries(KoiReceiver INTERFACE KoiQueue)

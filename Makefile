@@ -504,19 +504,6 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
-# Target rules for targets named KoiQueue
-
-# Build rule for target.
-KoiQueue: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 KoiQueue
-.PHONY : KoiQueue
-
-# fast build rule for target.
-KoiQueue/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiQueue.dir/build.make CMakeFiles/KoiQueue.dir/build
-.PHONY : KoiQueue/fast
-
-#=============================================================================
 # Target rules for targets named KoiCommonUtils
 
 # Build rule for target.
@@ -597,7 +584,7 @@ cpp/common/logger.o: cpp/common/logger.cc.o
 
 # target to build an object file
 cpp/common/logger.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiQueue.dir/build.make CMakeFiles/KoiQueue.dir/cpp/common/logger.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/cpp/common/logger.cc.o
 .PHONY : cpp/common/logger.cc.o
 
 cpp/common/logger.i: cpp/common/logger.cc.i
@@ -605,7 +592,7 @@ cpp/common/logger.i: cpp/common/logger.cc.i
 
 # target to preprocess a source file
 cpp/common/logger.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiQueue.dir/build.make CMakeFiles/KoiQueue.dir/cpp/common/logger.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/cpp/common/logger.cc.i
 .PHONY : cpp/common/logger.cc.i
 
 cpp/common/logger.s: cpp/common/logger.cc.s
@@ -613,7 +600,7 @@ cpp/common/logger.s: cpp/common/logger.cc.s
 
 # target to generate assembly for a file
 cpp/common/logger.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiQueue.dir/build.make CMakeFiles/KoiQueue.dir/cpp/common/logger.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/cpp/common/logger.cc.s
 .PHONY : cpp/common/logger.cc.s
 
 tests/fixed_size/koi_queue/test_multiprocess.o: tests/fixed_size/koi_queue/test_multiprocess.cpp.o
@@ -704,7 +691,6 @@ help:
 	@echo "... Catch2"
 	@echo "... Catch2WithMain"
 	@echo "... KoiCommonUtils"
-	@echo "... KoiQueue"
 	@echo "... spdlog"
 	@echo "... test_koi_queue"
 	@echo "... benchmarks/common/signals.o"

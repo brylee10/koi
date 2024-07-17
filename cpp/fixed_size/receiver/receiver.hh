@@ -1,16 +1,13 @@
 #pragma once
 
+#include "koi_queue.hh"
+
 // An IPC receiver
 template <typename T>
-class Receiver
+class Receiver : KoiQueue<T>
 {
-private:
-    unsigned int size;
-    T *data;
-
 public:
-    Receiver(unsigned int size) : size(size)
+    Receiver(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
     {
-        data = new T[size];
     }
 };
