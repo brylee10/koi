@@ -58,9 +58,9 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
         KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
 
         Message msg = {1, 2};
-        (*queue).send(msg);
+        queue.send(msg);
 
-        auto recv_msg = (*queue).recv();
+        auto recv_msg = queue.recv();
         REQUIRE(recv_msg.has_value());
         REQUIRE(recv_msg.value().x == 1);
         REQUIRE(recv_msg.value().y == 2);
@@ -74,12 +74,12 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
         for (int i = 0; i < 10; ++i)
         {
             msgs.push_back({i, i});
-            (*queue).send(msgs.back());
+            queue.send(msgs.back());
         }
 
         for (int i = 0; i < 10; ++i)
         {
-            auto recv_msg = (*queue).recv();
+            auto recv_msg = queue.recv();
             REQUIRE(recv_msg.has_value());
             REQUIRE(recv_msg.value().x == msgs[i].x);
             REQUIRE(recv_msg.value().y == msgs[i].y);
@@ -94,32 +94,32 @@ TEST_CASE("KoiQueue Error Handling", "[KoiQueue][SingleThread]")
     {
         KoiQueueRAII<int> queue(shm_name, SHM_SIZE);
 
-        REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE);
+        REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE);
 
         // Do a few send and recvs first
         for (int i = 0; i < 5; ++i)
         {
-            (*queue).send(i);
-            auto recv_msg = (*queue).recv();
+            queue.send(i);
+            auto recv_msg = queue.recv();
             REQUIRE(recv_msg.has_value());
             REQUIRE(recv_msg.value() == i);
         }
 
-        REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE);
+        REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE);
 
         // Fill the queue
-        size_t max_queue_messages = SHM_SIZE / (*queue).message_block_sz_bytes();
+        size_t max_queue_messages = SHM_SIZE / queue.message_block_sz_bytes();
         for (int i = 0; i < max_queue_messages; ++i)
         {
-            (*queue).send(i);
-            REQUIRE((*queue).shm_remaining_bytes() == SHM_SIZE - (i + 1) * (*queue).message_block_sz_bytes());
+            queue.send(i);
+            REQUIRE(queue.shm_remaining_bytes() == SHM_SIZE - (i + 1) * queue.message_block_sz_bytes());
         }
 
         // The sent messages should exactly fill the queue
-        REQUIRE((*queue).shm_remaining_bytes() == 0);
+        REQUIRE(queue.shm_remaining_bytes() == 0);
 
         // Attempt to send to a full queue
-        REQUIRE((*queue).send(0) == KoiQueueRet::QUEUE_FULL);
+        REQUIRE(queue.send(0) == KoiQueueRet::QUEUE_FULL);
     }
 
     // The below would not compile because the KoiQueue constructor statically checks
@@ -145,7 +145,7 @@ TEST_CASE("Sanity Checks", "[KoiQueue]")
     {
         // Test message block size is the `sizeof(T)` rounded up to the nearest cache line size
         KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
-        REQUIRE((*queue).message_block_sz_bytes() == CACHE_LINE_BYTES);
+        REQUIRE(queue.message_block_sz_bytes() == CACHE_LINE_BYTES);
     }
 
     SECTION("Valid byte buffer sizes")
@@ -158,6 +158,6 @@ TEST_CASE("Sanity Checks", "[KoiQueue]")
     SECTION("Queue is empty on creation")
     {
         KoiQueueRAII<char> queue(shm_name, SHM_SIZE);
-        REQUIRE((*queue).is_empty());
+        REQUIRE(queue.is_empty());
     }
 }

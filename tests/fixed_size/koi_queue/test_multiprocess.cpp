@@ -2,6 +2,7 @@
 #include "test_utils.hh"
 #include "signals.hh"
 #include "receiver.hh"
+#include "sender.hh"
 
 #include <catch2/catch_all.hpp>
 #include <chrono>
@@ -42,7 +43,7 @@ TEST_CASE("Single Send Recv", "[KoiQueue][MultiProcess]")
     if (sender_pid == 0)
     {
         // Child process is sender
-        KoiQueue<Message> queue(shm_name, SHM_SIZE);
+        KoiSender<Message> queue(shm_name, SHM_SIZE);
         queue.send(msg);
         exit(EXIT_SUCCESS);
     }
@@ -54,7 +55,7 @@ TEST_CASE("Single Send Recv", "[KoiQueue][MultiProcess]")
         exit(EXIT_FAILURE);
     }
 
-    KoiQueue<Message> queue(shm_name, SHM_SIZE);
+    KoiReceiver<Message> queue(shm_name, SHM_SIZE);
     auto recv_msg = queue.recv();
     REQUIRE(recv_msg.has_value());
     REQUIRE(recv_msg.value().x == msg.x);
@@ -89,7 +90,7 @@ TEST_CASE("Multiple Send Recv Alternating", "[KoiQueue][MultiProcess]")
     {
         // Child process is receiver (client)
         SignalManager signal_manager_client = SignalManager(SignalManager::SignalTarget::CLIENT);
-        KoiQueue<Message> queue(shm_name, SHM_SIZE);
+        KoiReceiver<Message> queue(shm_name, SHM_SIZE);
         // Indicate client is ready to receive
         signal_manager_client.notify();
         for (unsigned int i = 0; i < num_msg_groups; ++i)
@@ -112,7 +113,7 @@ TEST_CASE("Multiple Send Recv Alternating", "[KoiQueue][MultiProcess]")
     // Parent process is sender (server)
     // Wait until client is ready to receive
     signal_manager_server.wait_until_notify();
-    KoiQueue<Message> queue(shm_name, SHM_SIZE);
+    KoiSender<Message> queue(shm_name, SHM_SIZE);
     for (unsigned int i = 0; i < num_msg_groups; ++i)
     {
         for (unsigned int j = 0; j < num_msgs; ++j)
@@ -162,7 +163,7 @@ TEST_CASE("Multiple Send Recv Polling", "[KoiQueue][MultiProcess]")
     if (sender_pid == 0)
     {
         // Child process is receiver (client)
-        KoiQueue<Message> queue(shm_name, SHM_SIZE);
+        KoiReceiver<Message> queue(shm_name, SHM_SIZE);
         for (unsigned int i = 0; i < num_msg_groups * num_msgs; ++i)
         {
             auto start_time = std::chrono::steady_clock::now();
@@ -188,7 +189,7 @@ TEST_CASE("Multiple Send Recv Polling", "[KoiQueue][MultiProcess]")
         exit(EXIT_SUCCESS);
     }
     // Parent process is sender (server)
-    KoiQueue<Message> queue(shm_name, SHM_SIZE);
+    KoiSender<Message> queue(shm_name, SHM_SIZE);
     for (unsigned int i = 0; i < num_msg_groups * num_msgs; ++i)
     {
         Message msg = msgs[i];
@@ -234,7 +235,7 @@ TEST_CASE("Send Recv Two Full Queues", "[KoiQueue][MultiProcess]")
     {
         // Child process is receiver (client)
         SignalManager signal_manager_client = SignalManager(SignalManager::SignalTarget::CLIENT);
-        KoiQueue<Message> queue(shm_name, SHM_SIZE);
+        KoiReceiver<Message> queue(shm_name, SHM_SIZE);
         // Indicate client is ready to receive
         signal_manager_client.notify();
         for (unsigned int i = 0; i < num_full_queues; ++i)
@@ -257,7 +258,7 @@ TEST_CASE("Send Recv Two Full Queues", "[KoiQueue][MultiProcess]")
     // Parent process is sender (server)
     // Wait until client is ready to receive
     signal_manager_server.wait_until_notify();
-    KoiQueue<Message> queue(shm_name, SHM_SIZE);
+    KoiSender<Message> queue(shm_name, SHM_SIZE);
     for (unsigned int i = 0; i < num_full_queues; ++i)
     {
         for (unsigned int j = 0; j < num_msgs_to_fill_queue; ++j)
@@ -280,16 +281,4 @@ TEST_CASE("Send Recv Two Full Queues", "[KoiQueue][MultiProcess]")
         perror("waitpid");
         exit(EXIT_FAILURE);
     }
-}
-
-TEST_CASE("Sender Receiver Simple", "[KoiQueue][MultiProcess]")
-{
-    // Tests the Sender and Receiver abstractions in a simple case
-    const std::string shm_name = generate_unique_shm_name();
-    struct Message
-    {
-        unsigned int x;
-        unsigned int y;
-    };
-    Receiver<Message> rx = Receiver<Message>(shm_name, SHM_SIZE);
 }

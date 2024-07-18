@@ -50,10 +50,6 @@ template <typename T>
 class KoiQueue
 {
 public:
-    // `buffer_bytes` will be rounded up to the nearest multiple of `CACHE_LINE_BYTES`
-    KoiQueue(const std::string_view name, size_t buffer_bytes);
-    ~KoiQueue();
-
     // Returns total size of the shm segment that the user allocated
     // This is caveated by the fact the actual size of the shm segment includes the control block,
     // but this is opaque to the user
@@ -70,6 +66,10 @@ public:
     bool is_empty() const;
 
 protected:
+    // `buffer_bytes` will be rounded up to the nearest multiple of `CACHE_LINE_BYTES`
+    KoiQueue(const std::string_view name, size_t buffer_bytes);
+    virtual ~KoiQueue();
+
     // Returns `KoiQueueRet::QUEUE_FULL` if the queue is full, otherwise `KoiQueueRet::OK`
     KoiQueueRet send(T message);
     std::optional<T> recv();
@@ -106,46 +106,26 @@ private:
 // Typically this is not desirable so the shm segment can be used by other processes later
 // but this is useful for test cleanup
 template <typename T>
-class KoiQueueRAII
+class KoiQueueRAII : public KoiQueue<T>
 {
 public:
     // `explicit` constructor optional since the class takes two arguments which is difficult
     // to accidentally invoke with an implicit conversion
-    explicit KoiQueueRAII(const std::string_view name, size_t buffer_bytes) : queue_(name, buffer_bytes)
+    explicit KoiQueueRAII(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
     {
     }
 
     ~KoiQueueRAII()
     {
-        queue_.~KoiQueue();
         // `cleanup_shm` is not called in the default `KoiQueue` destructor
-        queue_.cleanup_shm();
+        cleanup_shm();
     }
 
-    // Dereference operator
-    KoiQueue<T> &operator*()
-    {
-        return queue_;
-    }
-
-    const KoiQueue<T> &operator*() const
-    {
-        return queue_;
-    }
-
-    // Arrow operator
-    KoiQueue<T> *operator->()
-    {
-        return &queue_;
-    }
-
-    const KoiQueue<T> *operator->() const
-    {
-        return &queue_;
-    }
+    using KoiQueue<T>::send;
+    using KoiQueue<T>::recv;
 
 private:
-    KoiQueue<T> queue_;
+    using KoiQueue<T>::cleanup_shm;
 };
 
 #include "koi_queue.tcc"

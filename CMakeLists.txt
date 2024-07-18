@@ -35,7 +35,7 @@ target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue Koi
 target_include_directories(test_koi_queue PRIVATE 
     cpp/fixed_size/koi_queue 
     benchmarks/common 
-    cpp/fixed_size/receiver tests
+    cpp/fixed_size/receiver cpp/fixed_size/sender tests
 )
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
