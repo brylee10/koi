@@ -12,4 +12,7 @@ public:
     }
 
     using KoiQueue<T>::send;
+    // Currently only the sender is allowed to clean up the shared memory segment
+    // since there is only one sender
+    using KoiQueue<T>::cleanup_shm;
 };

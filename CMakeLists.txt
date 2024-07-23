@@ -17,15 +17,28 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # from: https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#cmake-targets
 include(FetchContent)
 FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.4.0 # or a later release
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.4.0 # or a later release
 )
 FetchContent_MakeAvailable(catch2)
 
 # Add the test executable
 # https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#usage
 find_package(Catch2 REQUIRED)
+
+# Disable the Google Benchmark requirement on Google Test
+set(BENCHMARK_ENABLE_TESTING NO)
+
+# Fetch Google benchmark from its GitHub repository
+FetchContent_Declare(
+    googlebenchmark
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_TAG origin/main
+)
+
+# Make the spdlog content available
+FetchContent_MakeAvailable(googlebenchmark)
 
 add_executable(test_koi_queue 
     tests/fixed_size/koi_queue/test_single_thread.cpp 
@@ -47,7 +60,7 @@ catch_discover_tests(test_koi_queue)
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.14.0 # Specify the version or branch you want to use
+  GIT_TAG v1.14.0 
 )
 
 # Make the spdlog content available
@@ -63,4 +76,13 @@ target_include_directories(KoiQueue INTERFACE cpp/fixed_size/koi_queue cpp/commo
 target_link_libraries(KoiQueue INTERFACE KoiCommonUtils)
 
 add_library(KoiReceiver INTERFACE)
+target_include_directories(KoiReceiver INTERFACE cpp/fixed_size/receiver)
 target_link_libraries(KoiReceiver INTERFACE KoiQueue)
+
+add_library(KoiSender INTERFACE)
+target_include_directories(KoiSender INTERFACE cpp/fixed_size/sender)
+target_link_libraries(KoiSender INTERFACE KoiQueue)
+
+# Benchmarks
+add_executable (koi_bench benchmarks/koi_queue/koi_benchmarks.cpp)
+target_link_libraries(koi_bench benchmark::benchmark KoiReceiver KoiSender)

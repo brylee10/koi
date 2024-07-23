@@ -95,6 +95,51 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/opt/homebrew/Cellar/cmake/3.29.6/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/bylee/code/koi/CMakeFiles /Users/bylee/code/koi//CMakeFiles/progress.marks
@@ -517,6 +562,19 @@ KoiCommonUtils/fast:
 .PHONY : KoiCommonUtils/fast
 
 #=============================================================================
+# Target rules for targets named koi_bench
+
+# Build rule for target.
+koi_bench: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 koi_bench
+.PHONY : koi_bench
+
+# fast build rule for target.
+koi_bench/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/build
+.PHONY : koi_bench/fast
+
+#=============================================================================
 # Target rules for targets named Catch2
 
 # Build rule for target.
@@ -541,6 +599,32 @@ Catch2WithMain: cmake_check_build_system
 Catch2WithMain/fast:
 	$(MAKE) $(MAKESILENT) -f _deps/catch2-build/src/CMakeFiles/Catch2WithMain.dir/build.make _deps/catch2-build/src/CMakeFiles/Catch2WithMain.dir/build
 .PHONY : Catch2WithMain/fast
+
+#=============================================================================
+# Target rules for targets named benchmark
+
+# Build rule for target.
+benchmark: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 benchmark
+.PHONY : benchmark
+
+# fast build rule for target.
+benchmark/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googlebenchmark-build/src/CMakeFiles/benchmark.dir/build.make _deps/googlebenchmark-build/src/CMakeFiles/benchmark.dir/build
+.PHONY : benchmark/fast
+
+#=============================================================================
+# Target rules for targets named benchmark_main
+
+# Build rule for target.
+benchmark_main: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 benchmark_main
+.PHONY : benchmark_main
+
+# fast build rule for target.
+benchmark_main/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googlebenchmark-build/src/CMakeFiles/benchmark_main.dir/build.make _deps/googlebenchmark-build/src/CMakeFiles/benchmark_main.dir/build
+.PHONY : benchmark_main/fast
 
 #=============================================================================
 # Target rules for targets named spdlog
@@ -578,6 +662,30 @@ benchmarks/common/signals.s: benchmarks/common/signals.cc.s
 benchmarks/common/signals.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.s
 .PHONY : benchmarks/common/signals.cc.s
+
+benchmarks/koi_queue/koi_benchmarks.o: benchmarks/koi_queue/koi_benchmarks.cpp.o
+.PHONY : benchmarks/koi_queue/koi_benchmarks.o
+
+# target to build an object file
+benchmarks/koi_queue/koi_benchmarks.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.o
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.o
+
+benchmarks/koi_queue/koi_benchmarks.i: benchmarks/koi_queue/koi_benchmarks.cpp.i
+.PHONY : benchmarks/koi_queue/koi_benchmarks.i
+
+# target to preprocess a source file
+benchmarks/koi_queue/koi_benchmarks.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.i
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.i
+
+benchmarks/koi_queue/koi_benchmarks.s: benchmarks/koi_queue/koi_benchmarks.cpp.s
+.PHONY : benchmarks/koi_queue/koi_benchmarks.s
+
+# target to generate assembly for a file
+benchmarks/koi_queue/koi_benchmarks.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.s
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.s
 
 cpp/common/logger.o: cpp/common/logger.cc.o
 .PHONY : cpp/common/logger.o
@@ -658,6 +766,10 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... Continuous"
@@ -691,11 +803,17 @@ help:
 	@echo "... Catch2"
 	@echo "... Catch2WithMain"
 	@echo "... KoiCommonUtils"
+	@echo "... benchmark"
+	@echo "... benchmark_main"
+	@echo "... koi_bench"
 	@echo "... spdlog"
 	@echo "... test_koi_queue"
 	@echo "... benchmarks/common/signals.o"
 	@echo "... benchmarks/common/signals.i"
 	@echo "... benchmarks/common/signals.s"
+	@echo "... benchmarks/koi_queue/koi_benchmarks.o"
+	@echo "... benchmarks/koi_queue/koi_benchmarks.i"
+	@echo "... benchmarks/koi_queue/koi_benchmarks.s"
 	@echo "... cpp/common/logger.o"
 	@echo "... cpp/common/logger.i"
 	@echo "... cpp/common/logger.s"

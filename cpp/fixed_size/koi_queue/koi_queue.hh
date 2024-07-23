@@ -74,6 +74,8 @@ protected:
     KoiQueueRet send(T message);
     std::optional<T> recv();
 
+    void cleanup_shm();
+
 private:
     // The size of a "message block" (the message header + the message itself)
     // Round message block size up to the nearest cache line
@@ -96,7 +98,6 @@ private:
     // Initialization order is `open_shm` then `init_shm`
     int open_shm();
     int init_shm();
-    void cleanup_shm();
 
     // Allow `KoiQueueRAII` to access private members, particularly `cleanup_shm`
     friend class KoiQueueRAII<T>;
