@@ -549,6 +549,19 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
+# Target rules for targets named BoostReceiver
+
+# Build rule for target.
+BoostReceiver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BoostReceiver
+.PHONY : BoostReceiver
+
+# fast build rule for target.
+BoostReceiver/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/build
+.PHONY : BoostReceiver/fast
+
+#=============================================================================
 # Target rules for targets named KoiCommonUtils
 
 # Build rule for target.
@@ -573,6 +586,71 @@ koi_bench: cmake_check_build_system
 koi_bench/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/build
 .PHONY : koi_bench/fast
+
+#=============================================================================
+# Target rules for targets named BenchmarkUtils
+
+# Build rule for target.
+BenchmarkUtils: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BenchmarkUtils
+.PHONY : BenchmarkUtils
+
+# fast build rule for target.
+BenchmarkUtils/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/build
+.PHONY : BenchmarkUtils/fast
+
+#=============================================================================
+# Target rules for targets named ShmUtils
+
+# Build rule for target.
+ShmUtils: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ShmUtils
+.PHONY : ShmUtils
+
+# fast build rule for target.
+ShmUtils/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ShmUtils.dir/build.make CMakeFiles/ShmUtils.dir/build
+.PHONY : ShmUtils/fast
+
+#=============================================================================
+# Target rules for targets named shm_client
+
+# Build rule for target.
+shm_client: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 shm_client
+.PHONY : shm_client
+
+# fast build rule for target.
+shm_client/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_client.dir/build.make CMakeFiles/shm_client.dir/build
+.PHONY : shm_client/fast
+
+#=============================================================================
+# Target rules for targets named shm_server
+
+# Build rule for target.
+shm_server: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 shm_server
+.PHONY : shm_server
+
+# fast build rule for target.
+shm_server/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_server.dir/build.make CMakeFiles/shm_server.dir/build
+.PHONY : shm_server/fast
+
+#=============================================================================
+# Target rules for targets named launcher
+
+# Build rule for target.
+launcher: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 launcher
+.PHONY : launcher
+
+# fast build rule for target.
+launcher/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/launcher.dir/build.make CMakeFiles/launcher.dir/build
+.PHONY : launcher/fast
 
 #=============================================================================
 # Target rules for targets named Catch2
@@ -639,12 +717,434 @@ spdlog/fast:
 	$(MAKE) $(MAKESILENT) -f _deps/spdlog-build/CMakeFiles/spdlog.dir/build.make _deps/spdlog-build/CMakeFiles/spdlog.dir/build
 .PHONY : spdlog/fast
 
+#=============================================================================
+# Target rules for targets named Boost_atomic
+
+# Build rule for target.
+Boost_atomic: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_atomic
+.PHONY : Boost_atomic
+
+# fast build rule for target.
+Boost_atomic/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_atomic.dir/build.make boost-cmake/CMakeFiles/Boost_atomic.dir/build
+.PHONY : Boost_atomic/fast
+
+#=============================================================================
+# Target rules for targets named Boost_chrono
+
+# Build rule for target.
+Boost_chrono: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_chrono
+.PHONY : Boost_chrono
+
+# fast build rule for target.
+Boost_chrono/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_chrono.dir/build.make boost-cmake/CMakeFiles/Boost_chrono.dir/build
+.PHONY : Boost_chrono/fast
+
+#=============================================================================
+# Target rules for targets named Boost_container
+
+# Build rule for target.
+Boost_container: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_container
+.PHONY : Boost_container
+
+# fast build rule for target.
+Boost_container/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_container.dir/build.make boost-cmake/CMakeFiles/Boost_container.dir/build
+.PHONY : Boost_container/fast
+
+#=============================================================================
+# Target rules for targets named Boost_context
+
+# Build rule for target.
+Boost_context: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_context
+.PHONY : Boost_context
+
+# fast build rule for target.
+Boost_context/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_context.dir/build.make boost-cmake/CMakeFiles/Boost_context.dir/build
+.PHONY : Boost_context/fast
+
+#=============================================================================
+# Target rules for targets named Boost_coroutine
+
+# Build rule for target.
+Boost_coroutine: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_coroutine
+.PHONY : Boost_coroutine
+
+# fast build rule for target.
+Boost_coroutine/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_coroutine.dir/build.make boost-cmake/CMakeFiles/Boost_coroutine.dir/build
+.PHONY : Boost_coroutine/fast
+
+#=============================================================================
+# Target rules for targets named Boost_date_time
+
+# Build rule for target.
+Boost_date_time: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_date_time
+.PHONY : Boost_date_time
+
+# fast build rule for target.
+Boost_date_time/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_date_time.dir/build.make boost-cmake/CMakeFiles/Boost_date_time.dir/build
+.PHONY : Boost_date_time/fast
+
+#=============================================================================
+# Target rules for targets named Boost_exception
+
+# Build rule for target.
+Boost_exception: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_exception
+.PHONY : Boost_exception
+
+# fast build rule for target.
+Boost_exception/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_exception.dir/build.make boost-cmake/CMakeFiles/Boost_exception.dir/build
+.PHONY : Boost_exception/fast
+
+#=============================================================================
+# Target rules for targets named Boost_fiber
+
+# Build rule for target.
+Boost_fiber: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_fiber
+.PHONY : Boost_fiber
+
+# fast build rule for target.
+Boost_fiber/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_fiber.dir/build.make boost-cmake/CMakeFiles/Boost_fiber.dir/build
+.PHONY : Boost_fiber/fast
+
+#=============================================================================
+# Target rules for targets named Boost_filesystem
+
+# Build rule for target.
+Boost_filesystem: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_filesystem
+.PHONY : Boost_filesystem
+
+# fast build rule for target.
+Boost_filesystem/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_filesystem.dir/build.make boost-cmake/CMakeFiles/Boost_filesystem.dir/build
+.PHONY : Boost_filesystem/fast
+
+#=============================================================================
+# Target rules for targets named Boost_graph
+
+# Build rule for target.
+Boost_graph: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_graph
+.PHONY : Boost_graph
+
+# fast build rule for target.
+Boost_graph/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_graph.dir/build.make boost-cmake/CMakeFiles/Boost_graph.dir/build
+.PHONY : Boost_graph/fast
+
+#=============================================================================
+# Target rules for targets named Boost_iostreams
+
+# Build rule for target.
+Boost_iostreams: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_iostreams
+.PHONY : Boost_iostreams
+
+# fast build rule for target.
+Boost_iostreams/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_iostreams.dir/build.make boost-cmake/CMakeFiles/Boost_iostreams.dir/build
+.PHONY : Boost_iostreams/fast
+
+#=============================================================================
+# Target rules for targets named Boost_locale
+
+# Build rule for target.
+Boost_locale: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_locale
+.PHONY : Boost_locale
+
+# fast build rule for target.
+Boost_locale/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_locale.dir/build.make boost-cmake/CMakeFiles/Boost_locale.dir/build
+.PHONY : Boost_locale/fast
+
+#=============================================================================
+# Target rules for targets named Boost_log
+
+# Build rule for target.
+Boost_log: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_log
+.PHONY : Boost_log
+
+# fast build rule for target.
+Boost_log/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_log.dir/build.make boost-cmake/CMakeFiles/Boost_log.dir/build
+.PHONY : Boost_log/fast
+
+#=============================================================================
+# Target rules for targets named Boost_log_setup
+
+# Build rule for target.
+Boost_log_setup: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_log_setup
+.PHONY : Boost_log_setup
+
+# fast build rule for target.
+Boost_log_setup/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_log_setup.dir/build.make boost-cmake/CMakeFiles/Boost_log_setup.dir/build
+.PHONY : Boost_log_setup/fast
+
+#=============================================================================
+# Target rules for targets named Boost_math
+
+# Build rule for target.
+Boost_math: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_math
+.PHONY : Boost_math
+
+# fast build rule for target.
+Boost_math/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_math.dir/build.make boost-cmake/CMakeFiles/Boost_math.dir/build
+.PHONY : Boost_math/fast
+
+#=============================================================================
+# Target rules for targets named Boost_program_options
+
+# Build rule for target.
+Boost_program_options: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_program_options
+.PHONY : Boost_program_options
+
+# fast build rule for target.
+Boost_program_options/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_program_options.dir/build.make boost-cmake/CMakeFiles/Boost_program_options.dir/build
+.PHONY : Boost_program_options/fast
+
+#=============================================================================
+# Target rules for targets named Boost_random
+
+# Build rule for target.
+Boost_random: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_random
+.PHONY : Boost_random
+
+# fast build rule for target.
+Boost_random/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_random.dir/build.make boost-cmake/CMakeFiles/Boost_random.dir/build
+.PHONY : Boost_random/fast
+
+#=============================================================================
+# Target rules for targets named Boost_regex
+
+# Build rule for target.
+Boost_regex: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_regex
+.PHONY : Boost_regex
+
+# fast build rule for target.
+Boost_regex/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_regex.dir/build.make boost-cmake/CMakeFiles/Boost_regex.dir/build
+.PHONY : Boost_regex/fast
+
+#=============================================================================
+# Target rules for targets named Boost_serialization
+
+# Build rule for target.
+Boost_serialization: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_serialization
+.PHONY : Boost_serialization
+
+# fast build rule for target.
+Boost_serialization/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_serialization.dir/build.make boost-cmake/CMakeFiles/Boost_serialization.dir/build
+.PHONY : Boost_serialization/fast
+
+#=============================================================================
+# Target rules for targets named Boost_system
+
+# Build rule for target.
+Boost_system: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_system
+.PHONY : Boost_system
+
+# fast build rule for target.
+Boost_system/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_system.dir/build.make boost-cmake/CMakeFiles/Boost_system.dir/build
+.PHONY : Boost_system/fast
+
+#=============================================================================
+# Target rules for targets named Boost_unit_test_framework
+
+# Build rule for target.
+Boost_unit_test_framework: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_unit_test_framework
+.PHONY : Boost_unit_test_framework
+
+# fast build rule for target.
+Boost_unit_test_framework/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_unit_test_framework.dir/build.make boost-cmake/CMakeFiles/Boost_unit_test_framework.dir/build
+.PHONY : Boost_unit_test_framework/fast
+
+#=============================================================================
+# Target rules for targets named Boost_thread
+
+# Build rule for target.
+Boost_thread: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_thread
+.PHONY : Boost_thread
+
+# fast build rule for target.
+Boost_thread/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_thread.dir/build.make boost-cmake/CMakeFiles/Boost_thread.dir/build
+.PHONY : Boost_thread/fast
+
+#=============================================================================
+# Target rules for targets named Boost_timer
+
+# Build rule for target.
+Boost_timer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_timer
+.PHONY : Boost_timer
+
+# fast build rule for target.
+Boost_timer/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_timer.dir/build.make boost-cmake/CMakeFiles/Boost_timer.dir/build
+.PHONY : Boost_timer/fast
+
+#=============================================================================
+# Target rules for targets named Boost_type_erasure
+
+# Build rule for target.
+Boost_type_erasure: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_type_erasure
+.PHONY : Boost_type_erasure
+
+# fast build rule for target.
+Boost_type_erasure/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_type_erasure.dir/build.make boost-cmake/CMakeFiles/Boost_type_erasure.dir/build
+.PHONY : Boost_type_erasure/fast
+
+#=============================================================================
+# Target rules for targets named Boost_wave
+
+# Build rule for target.
+Boost_wave: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_wave
+.PHONY : Boost_wave
+
+# fast build rule for target.
+Boost_wave/fast:
+	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_wave.dir/build.make boost-cmake/CMakeFiles/Boost_wave.dir/build
+.PHONY : Boost_wave/fast
+
+benchmarks/boost/receiver.o: benchmarks/boost/receiver.cc.o
+.PHONY : benchmarks/boost/receiver.o
+
+# target to build an object file
+benchmarks/boost/receiver.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.o
+.PHONY : benchmarks/boost/receiver.cc.o
+
+benchmarks/boost/receiver.i: benchmarks/boost/receiver.cc.i
+.PHONY : benchmarks/boost/receiver.i
+
+# target to preprocess a source file
+benchmarks/boost/receiver.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.i
+.PHONY : benchmarks/boost/receiver.cc.i
+
+benchmarks/boost/receiver.s: benchmarks/boost/receiver.cc.s
+.PHONY : benchmarks/boost/receiver.s
+
+# target to generate assembly for a file
+benchmarks/boost/receiver.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.s
+.PHONY : benchmarks/boost/receiver.cc.s
+
+benchmarks/common/args.o: benchmarks/common/args.cc.o
+.PHONY : benchmarks/common/args.o
+
+# target to build an object file
+benchmarks/common/args.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/args.cc.o
+.PHONY : benchmarks/common/args.cc.o
+
+benchmarks/common/args.i: benchmarks/common/args.cc.i
+.PHONY : benchmarks/common/args.i
+
+# target to preprocess a source file
+benchmarks/common/args.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/args.cc.i
+.PHONY : benchmarks/common/args.cc.i
+
+benchmarks/common/args.s: benchmarks/common/args.cc.s
+.PHONY : benchmarks/common/args.s
+
+# target to generate assembly for a file
+benchmarks/common/args.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/args.cc.s
+.PHONY : benchmarks/common/args.cc.s
+
+benchmarks/common/bench.o: benchmarks/common/bench.cc.o
+.PHONY : benchmarks/common/bench.o
+
+# target to build an object file
+benchmarks/common/bench.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/bench.cc.o
+.PHONY : benchmarks/common/bench.cc.o
+
+benchmarks/common/bench.i: benchmarks/common/bench.cc.i
+.PHONY : benchmarks/common/bench.i
+
+# target to preprocess a source file
+benchmarks/common/bench.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/bench.cc.i
+.PHONY : benchmarks/common/bench.cc.i
+
+benchmarks/common/bench.s: benchmarks/common/bench.cc.s
+.PHONY : benchmarks/common/bench.s
+
+# target to generate assembly for a file
+benchmarks/common/bench.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/bench.cc.s
+.PHONY : benchmarks/common/bench.cc.s
+
+benchmarks/common/launcher.o: benchmarks/common/launcher.cc.o
+.PHONY : benchmarks/common/launcher.o
+
+# target to build an object file
+benchmarks/common/launcher.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/launcher.dir/build.make CMakeFiles/launcher.dir/benchmarks/common/launcher.cc.o
+.PHONY : benchmarks/common/launcher.cc.o
+
+benchmarks/common/launcher.i: benchmarks/common/launcher.cc.i
+.PHONY : benchmarks/common/launcher.i
+
+# target to preprocess a source file
+benchmarks/common/launcher.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/launcher.dir/build.make CMakeFiles/launcher.dir/benchmarks/common/launcher.cc.i
+.PHONY : benchmarks/common/launcher.cc.i
+
+benchmarks/common/launcher.s: benchmarks/common/launcher.cc.s
+.PHONY : benchmarks/common/launcher.s
+
+# target to generate assembly for a file
+benchmarks/common/launcher.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/launcher.dir/build.make CMakeFiles/launcher.dir/benchmarks/common/launcher.cc.s
+.PHONY : benchmarks/common/launcher.cc.s
+
 benchmarks/common/signals.o: benchmarks/common/signals.cc.o
 .PHONY : benchmarks/common/signals.o
 
 # target to build an object file
 benchmarks/common/signals.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/signals.cc.o
 .PHONY : benchmarks/common/signals.cc.o
 
 benchmarks/common/signals.i: benchmarks/common/signals.cc.i
@@ -653,6 +1153,7 @@ benchmarks/common/signals.i: benchmarks/common/signals.cc.i
 # target to preprocess a source file
 benchmarks/common/signals.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/signals.cc.i
 .PHONY : benchmarks/common/signals.cc.i
 
 benchmarks/common/signals.s: benchmarks/common/signals.cc.s
@@ -661,31 +1162,128 @@ benchmarks/common/signals.s: benchmarks/common/signals.cc.s
 # target to generate assembly for a file
 benchmarks/common/signals.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KoiCommonUtils.dir/build.make CMakeFiles/KoiCommonUtils.dir/benchmarks/common/signals.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/signals.cc.s
 .PHONY : benchmarks/common/signals.cc.s
 
-benchmarks/koi_queue/koi_benchmarks.o: benchmarks/koi_queue/koi_benchmarks.cpp.o
+benchmarks/common/utils.o: benchmarks/common/utils.cc.o
+.PHONY : benchmarks/common/utils.o
+
+# target to build an object file
+benchmarks/common/utils.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/utils.cc.o
+.PHONY : benchmarks/common/utils.cc.o
+
+benchmarks/common/utils.i: benchmarks/common/utils.cc.i
+.PHONY : benchmarks/common/utils.i
+
+# target to preprocess a source file
+benchmarks/common/utils.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/utils.cc.i
+.PHONY : benchmarks/common/utils.cc.i
+
+benchmarks/common/utils.s: benchmarks/common/utils.cc.s
+.PHONY : benchmarks/common/utils.s
+
+# target to generate assembly for a file
+benchmarks/common/utils.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BenchmarkUtils.dir/build.make CMakeFiles/BenchmarkUtils.dir/benchmarks/common/utils.cc.s
+.PHONY : benchmarks/common/utils.cc.s
+
+benchmarks/koi_queue/koi_benchmarks.o: benchmarks/koi_queue/koi_benchmarks.cc.o
 .PHONY : benchmarks/koi_queue/koi_benchmarks.o
 
 # target to build an object file
-benchmarks/koi_queue/koi_benchmarks.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.o
-.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.o
+benchmarks/koi_queue/koi_benchmarks.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cc.o
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cc.o
 
-benchmarks/koi_queue/koi_benchmarks.i: benchmarks/koi_queue/koi_benchmarks.cpp.i
+benchmarks/koi_queue/koi_benchmarks.i: benchmarks/koi_queue/koi_benchmarks.cc.i
 .PHONY : benchmarks/koi_queue/koi_benchmarks.i
 
 # target to preprocess a source file
-benchmarks/koi_queue/koi_benchmarks.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.i
-.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.i
+benchmarks/koi_queue/koi_benchmarks.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cc.i
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cc.i
 
-benchmarks/koi_queue/koi_benchmarks.s: benchmarks/koi_queue/koi_benchmarks.cpp.s
+benchmarks/koi_queue/koi_benchmarks.s: benchmarks/koi_queue/koi_benchmarks.cc.s
 .PHONY : benchmarks/koi_queue/koi_benchmarks.s
 
 # target to generate assembly for a file
-benchmarks/koi_queue/koi_benchmarks.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cpp.s
-.PHONY : benchmarks/koi_queue/koi_benchmarks.cpp.s
+benchmarks/koi_queue/koi_benchmarks.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/benchmarks/koi_queue/koi_benchmarks.cc.s
+.PHONY : benchmarks/koi_queue/koi_benchmarks.cc.s
+
+benchmarks/shm/client.o: benchmarks/shm/client.cc.o
+.PHONY : benchmarks/shm/client.o
+
+# target to build an object file
+benchmarks/shm/client.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_client.dir/build.make CMakeFiles/shm_client.dir/benchmarks/shm/client.cc.o
+.PHONY : benchmarks/shm/client.cc.o
+
+benchmarks/shm/client.i: benchmarks/shm/client.cc.i
+.PHONY : benchmarks/shm/client.i
+
+# target to preprocess a source file
+benchmarks/shm/client.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_client.dir/build.make CMakeFiles/shm_client.dir/benchmarks/shm/client.cc.i
+.PHONY : benchmarks/shm/client.cc.i
+
+benchmarks/shm/client.s: benchmarks/shm/client.cc.s
+.PHONY : benchmarks/shm/client.s
+
+# target to generate assembly for a file
+benchmarks/shm/client.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_client.dir/build.make CMakeFiles/shm_client.dir/benchmarks/shm/client.cc.s
+.PHONY : benchmarks/shm/client.cc.s
+
+benchmarks/shm/server.o: benchmarks/shm/server.cc.o
+.PHONY : benchmarks/shm/server.o
+
+# target to build an object file
+benchmarks/shm/server.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_server.dir/build.make CMakeFiles/shm_server.dir/benchmarks/shm/server.cc.o
+.PHONY : benchmarks/shm/server.cc.o
+
+benchmarks/shm/server.i: benchmarks/shm/server.cc.i
+.PHONY : benchmarks/shm/server.i
+
+# target to preprocess a source file
+benchmarks/shm/server.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_server.dir/build.make CMakeFiles/shm_server.dir/benchmarks/shm/server.cc.i
+.PHONY : benchmarks/shm/server.cc.i
+
+benchmarks/shm/server.s: benchmarks/shm/server.cc.s
+.PHONY : benchmarks/shm/server.s
+
+# target to generate assembly for a file
+benchmarks/shm/server.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/shm_server.dir/build.make CMakeFiles/shm_server.dir/benchmarks/shm/server.cc.s
+.PHONY : benchmarks/shm/server.cc.s
+
+benchmarks/shm/shm.o: benchmarks/shm/shm.cc.o
+.PHONY : benchmarks/shm/shm.o
+
+# target to build an object file
+benchmarks/shm/shm.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ShmUtils.dir/build.make CMakeFiles/ShmUtils.dir/benchmarks/shm/shm.cc.o
+.PHONY : benchmarks/shm/shm.cc.o
+
+benchmarks/shm/shm.i: benchmarks/shm/shm.cc.i
+.PHONY : benchmarks/shm/shm.i
+
+# target to preprocess a source file
+benchmarks/shm/shm.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ShmUtils.dir/build.make CMakeFiles/ShmUtils.dir/benchmarks/shm/shm.cc.i
+.PHONY : benchmarks/shm/shm.cc.i
+
+benchmarks/shm/shm.s: benchmarks/shm/shm.cc.s
+.PHONY : benchmarks/shm/shm.s
+
+# target to generate assembly for a file
+benchmarks/shm/shm.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ShmUtils.dir/build.make CMakeFiles/ShmUtils.dir/benchmarks/shm/shm.cc.s
+.PHONY : benchmarks/shm/shm.cc.s
 
 cpp/common/logger.o: cpp/common/logger.cc.o
 .PHONY : cpp/common/logger.o
@@ -800,20 +1398,75 @@ help:
 	@echo "... NightlySubmit"
 	@echo "... NightlyTest"
 	@echo "... NightlyUpdate"
+	@echo "... BenchmarkUtils"
+	@echo "... BoostReceiver"
+	@echo "... Boost_atomic"
+	@echo "... Boost_chrono"
+	@echo "... Boost_container"
+	@echo "... Boost_context"
+	@echo "... Boost_coroutine"
+	@echo "... Boost_date_time"
+	@echo "... Boost_exception"
+	@echo "... Boost_fiber"
+	@echo "... Boost_filesystem"
+	@echo "... Boost_graph"
+	@echo "... Boost_iostreams"
+	@echo "... Boost_locale"
+	@echo "... Boost_log"
+	@echo "... Boost_log_setup"
+	@echo "... Boost_math"
+	@echo "... Boost_program_options"
+	@echo "... Boost_random"
+	@echo "... Boost_regex"
+	@echo "... Boost_serialization"
+	@echo "... Boost_system"
+	@echo "... Boost_thread"
+	@echo "... Boost_timer"
+	@echo "... Boost_type_erasure"
+	@echo "... Boost_unit_test_framework"
+	@echo "... Boost_wave"
 	@echo "... Catch2"
 	@echo "... Catch2WithMain"
 	@echo "... KoiCommonUtils"
+	@echo "... ShmUtils"
 	@echo "... benchmark"
 	@echo "... benchmark_main"
 	@echo "... koi_bench"
+	@echo "... launcher"
+	@echo "... shm_client"
+	@echo "... shm_server"
 	@echo "... spdlog"
 	@echo "... test_koi_queue"
+	@echo "... benchmarks/boost/receiver.o"
+	@echo "... benchmarks/boost/receiver.i"
+	@echo "... benchmarks/boost/receiver.s"
+	@echo "... benchmarks/common/args.o"
+	@echo "... benchmarks/common/args.i"
+	@echo "... benchmarks/common/args.s"
+	@echo "... benchmarks/common/bench.o"
+	@echo "... benchmarks/common/bench.i"
+	@echo "... benchmarks/common/bench.s"
+	@echo "... benchmarks/common/launcher.o"
+	@echo "... benchmarks/common/launcher.i"
+	@echo "... benchmarks/common/launcher.s"
 	@echo "... benchmarks/common/signals.o"
 	@echo "... benchmarks/common/signals.i"
 	@echo "... benchmarks/common/signals.s"
+	@echo "... benchmarks/common/utils.o"
+	@echo "... benchmarks/common/utils.i"
+	@echo "... benchmarks/common/utils.s"
 	@echo "... benchmarks/koi_queue/koi_benchmarks.o"
 	@echo "... benchmarks/koi_queue/koi_benchmarks.i"
 	@echo "... benchmarks/koi_queue/koi_benchmarks.s"
+	@echo "... benchmarks/shm/client.o"
+	@echo "... benchmarks/shm/client.i"
+	@echo "... benchmarks/shm/client.s"
+	@echo "... benchmarks/shm/server.o"
+	@echo "... benchmarks/shm/server.i"
+	@echo "... benchmarks/shm/server.s"
+	@echo "... benchmarks/shm/shm.o"
+	@echo "... benchmarks/shm/shm.i"
+	@echo "... benchmarks/shm/shm.s"
 	@echo "... cpp/common/logger.o"
 	@echo "... cpp/common/logger.i"
 	@echo "... cpp/common/logger.s"

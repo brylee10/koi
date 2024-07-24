@@ -27,6 +27,8 @@ KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
     static_assert(std::is_trivially_copyable<T>::value, "T must be trivially copyable");
     static_assert(message_sz <= MAX_MESSAGE_SIZE_BYTES, "Message size is larger than the max message size");
 
+    // TODO: Add check that the message size is not larger than the shm size
+
     spdlog::debug("Constructing KoiQueue with shm_name: {}, user_shm_size: {}", shm_name, user_shm_size);
     shm_metadata_.shm_name = std::string(shm_name);
 

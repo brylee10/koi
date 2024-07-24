@@ -66,6 +66,11 @@ FetchContent_Declare(
 # Make the spdlog content available
 FetchContent_MakeAvailable(spdlog)
 
+# Add Boost
+add_subdirectory(boost-cmake)
+add_executable(BoostReceiver benchmarks/boost/receiver.cc)
+target_link_libraries(BoostReceiver PUBLIC Boost::boost)
+
 # Build libraries
 add_library(KoiCommonUtils benchmarks/common/signals.cc cpp/common/logger.cc)
 target_include_directories(KoiCommonUtils PUBLIC cpp/common)
@@ -84,5 +89,25 @@ target_include_directories(KoiSender INTERFACE cpp/fixed_size/sender)
 target_link_libraries(KoiSender INTERFACE KoiQueue)
 
 # Benchmarks
-add_executable (koi_bench benchmarks/koi_queue/koi_benchmarks.cpp)
+# Koi
+add_executable (koi_bench benchmarks/koi_queue/koi_benchmarks.cc)
 target_link_libraries(koi_bench benchmark::benchmark KoiReceiver KoiSender)
+
+# Basic IPC benchmarks
+add_library(BenchmarkUtils benchmarks/common/utils.cc 
+    benchmarks/common/args.cc benchmarks/common/bench.cc
+    benchmarks/common/signals.cc)
+target_include_directories(BenchmarkUtils PUBLIC benchmarks/common)
+
+add_library(ShmUtils benchmarks/shm/shm.cc) 
+target_include_directories(ShmUtils PUBLIC benchmarks/shm benchmarks/common)
+
+function(setup_ipc_executable target_name source output_name kind)
+    add_executable(${target_name} ${source})
+    target_link_libraries(${target_name} PRIVATE BenchmarkUtils ShmUtils)
+    set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${kind} OUTPUT_NAME ${output_name})
+endfunction()
+
+setup_ipc_executable(shm_client benchmarks/shm/client.cc client shm)
+setup_ipc_executable(shm_server benchmarks/shm/server.cc server shm)
+setup_ipc_executable(launcher benchmarks/common/launcher.cc launcher launcher)
