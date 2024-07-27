@@ -549,19 +549,6 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
-# Target rules for targets named BoostReceiver
-
-# Build rule for target.
-BoostReceiver: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BoostReceiver
-.PHONY : BoostReceiver
-
-# fast build rule for target.
-BoostReceiver/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/build
-.PHONY : BoostReceiver/fast
-
-#=============================================================================
 # Target rules for targets named KoiCommonUtils
 
 # Build rule for target.
@@ -586,6 +573,32 @@ koi_bench: cmake_check_build_system
 koi_bench/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/koi_bench.dir/build.make CMakeFiles/koi_bench.dir/build
 .PHONY : koi_bench/fast
+
+#=============================================================================
+# Target rules for targets named boost_ipc
+
+# Build rule for target.
+boost_ipc: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 boost_ipc
+.PHONY : boost_ipc
+
+# fast build rule for target.
+boost_ipc/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_ipc.dir/build.make CMakeFiles/boost_ipc.dir/build
+.PHONY : boost_ipc/fast
+
+#=============================================================================
+# Target rules for targets named boost_test
+
+# Build rule for target.
+boost_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 boost_test
+.PHONY : boost_test
+
+# fast build rule for target.
+boost_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/build
+.PHONY : boost_test/fast
 
 #=============================================================================
 # Target rules for targets named BenchmarkUtils
@@ -835,19 +848,6 @@ Boost_filesystem/fast:
 .PHONY : Boost_filesystem/fast
 
 #=============================================================================
-# Target rules for targets named Boost_graph
-
-# Build rule for target.
-Boost_graph: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_graph
-.PHONY : Boost_graph
-
-# fast build rule for target.
-Boost_graph/fast:
-	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_graph.dir/build.make boost-cmake/CMakeFiles/Boost_graph.dir/build
-.PHONY : Boost_graph/fast
-
-#=============================================================================
 # Target rules for targets named Boost_iostreams
 
 # Build rule for target.
@@ -859,19 +859,6 @@ Boost_iostreams: cmake_check_build_system
 Boost_iostreams/fast:
 	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_iostreams.dir/build.make boost-cmake/CMakeFiles/Boost_iostreams.dir/build
 .PHONY : Boost_iostreams/fast
-
-#=============================================================================
-# Target rules for targets named Boost_locale
-
-# Build rule for target.
-Boost_locale: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_locale
-.PHONY : Boost_locale
-
-# fast build rule for target.
-Boost_locale/fast:
-	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_locale.dir/build.make boost-cmake/CMakeFiles/Boost_locale.dir/build
-.PHONY : Boost_locale/fast
 
 #=============================================================================
 # Target rules for targets named Boost_log
@@ -937,19 +924,6 @@ Boost_random: cmake_check_build_system
 Boost_random/fast:
 	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_random.dir/build.make boost-cmake/CMakeFiles/Boost_random.dir/build
 .PHONY : Boost_random/fast
-
-#=============================================================================
-# Target rules for targets named Boost_regex
-
-# Build rule for target.
-Boost_regex: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Boost_regex
-.PHONY : Boost_regex
-
-# fast build rule for target.
-Boost_regex/fast:
-	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_regex.dir/build.make boost-cmake/CMakeFiles/Boost_regex.dir/build
-.PHONY : Boost_regex/fast
 
 #=============================================================================
 # Target rules for targets named Boost_serialization
@@ -1042,29 +1016,53 @@ Boost_wave/fast:
 	$(MAKE) $(MAKESILENT) -f boost-cmake/CMakeFiles/Boost_wave.dir/build.make boost-cmake/CMakeFiles/Boost_wave.dir/build
 .PHONY : Boost_wave/fast
 
-benchmarks/boost/receiver.o: benchmarks/boost/receiver.cc.o
-.PHONY : benchmarks/boost/receiver.o
+benchmarks/boost/boost_benchmarks.o: benchmarks/boost/boost_benchmarks.cc.o
+.PHONY : benchmarks/boost/boost_benchmarks.o
 
 # target to build an object file
-benchmarks/boost/receiver.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.o
-.PHONY : benchmarks/boost/receiver.cc.o
+benchmarks/boost/boost_benchmarks.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_ipc.dir/build.make CMakeFiles/boost_ipc.dir/benchmarks/boost/boost_benchmarks.cc.o
+.PHONY : benchmarks/boost/boost_benchmarks.cc.o
 
-benchmarks/boost/receiver.i: benchmarks/boost/receiver.cc.i
-.PHONY : benchmarks/boost/receiver.i
+benchmarks/boost/boost_benchmarks.i: benchmarks/boost/boost_benchmarks.cc.i
+.PHONY : benchmarks/boost/boost_benchmarks.i
 
 # target to preprocess a source file
-benchmarks/boost/receiver.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.i
-.PHONY : benchmarks/boost/receiver.cc.i
+benchmarks/boost/boost_benchmarks.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_ipc.dir/build.make CMakeFiles/boost_ipc.dir/benchmarks/boost/boost_benchmarks.cc.i
+.PHONY : benchmarks/boost/boost_benchmarks.cc.i
 
-benchmarks/boost/receiver.s: benchmarks/boost/receiver.cc.s
-.PHONY : benchmarks/boost/receiver.s
+benchmarks/boost/boost_benchmarks.s: benchmarks/boost/boost_benchmarks.cc.s
+.PHONY : benchmarks/boost/boost_benchmarks.s
 
 # target to generate assembly for a file
-benchmarks/boost/receiver.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/BoostReceiver.dir/build.make CMakeFiles/BoostReceiver.dir/benchmarks/boost/receiver.cc.s
-.PHONY : benchmarks/boost/receiver.cc.s
+benchmarks/boost/boost_benchmarks.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_ipc.dir/build.make CMakeFiles/boost_ipc.dir/benchmarks/boost/boost_benchmarks.cc.s
+.PHONY : benchmarks/boost/boost_benchmarks.cc.s
+
+benchmarks/boost/boost_test.o: benchmarks/boost/boost_test.cc.o
+.PHONY : benchmarks/boost/boost_test.o
+
+# target to build an object file
+benchmarks/boost/boost_test.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.o
+.PHONY : benchmarks/boost/boost_test.cc.o
+
+benchmarks/boost/boost_test.i: benchmarks/boost/boost_test.cc.i
+.PHONY : benchmarks/boost/boost_test.i
+
+# target to preprocess a source file
+benchmarks/boost/boost_test.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.i
+.PHONY : benchmarks/boost/boost_test.cc.i
+
+benchmarks/boost/boost_test.s: benchmarks/boost/boost_test.cc.s
+.PHONY : benchmarks/boost/boost_test.s
+
+# target to generate assembly for a file
+benchmarks/boost/boost_test.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.s
+.PHONY : benchmarks/boost/boost_test.cc.s
 
 benchmarks/common/args.o: benchmarks/common/args.cc.o
 .PHONY : benchmarks/common/args.o
@@ -1399,7 +1397,6 @@ help:
 	@echo "... NightlyTest"
 	@echo "... NightlyUpdate"
 	@echo "... BenchmarkUtils"
-	@echo "... BoostReceiver"
 	@echo "... Boost_atomic"
 	@echo "... Boost_chrono"
 	@echo "... Boost_container"
@@ -1409,15 +1406,12 @@ help:
 	@echo "... Boost_exception"
 	@echo "... Boost_fiber"
 	@echo "... Boost_filesystem"
-	@echo "... Boost_graph"
 	@echo "... Boost_iostreams"
-	@echo "... Boost_locale"
 	@echo "... Boost_log"
 	@echo "... Boost_log_setup"
 	@echo "... Boost_math"
 	@echo "... Boost_program_options"
 	@echo "... Boost_random"
-	@echo "... Boost_regex"
 	@echo "... Boost_serialization"
 	@echo "... Boost_system"
 	@echo "... Boost_thread"
@@ -1431,15 +1425,20 @@ help:
 	@echo "... ShmUtils"
 	@echo "... benchmark"
 	@echo "... benchmark_main"
+	@echo "... boost_ipc"
+	@echo "... boost_test"
 	@echo "... koi_bench"
 	@echo "... launcher"
 	@echo "... shm_client"
 	@echo "... shm_server"
 	@echo "... spdlog"
 	@echo "... test_koi_queue"
-	@echo "... benchmarks/boost/receiver.o"
-	@echo "... benchmarks/boost/receiver.i"
-	@echo "... benchmarks/boost/receiver.s"
+	@echo "... benchmarks/boost/boost_benchmarks.o"
+	@echo "... benchmarks/boost/boost_benchmarks.i"
+	@echo "... benchmarks/boost/boost_benchmarks.s"
+	@echo "... benchmarks/boost/boost_test.o"
+	@echo "... benchmarks/boost/boost_test.i"
+	@echo "... benchmarks/boost/boost_test.s"
 	@echo "... benchmarks/common/args.o"
 	@echo "... benchmarks/common/args.i"
 	@echo "... benchmarks/common/args.s"

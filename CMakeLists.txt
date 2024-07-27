@@ -1,6 +1,7 @@
 # cmake 3.0 released in June 2014
 cmake_minimum_required(VERSION 3.0)
 project(Koi LANGUAGES CXX VERSION 0.0.1)
+# set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 
@@ -66,10 +67,10 @@ FetchContent_Declare(
 # Make the spdlog content available
 FetchContent_MakeAvailable(spdlog)
 
-# Add Boost
+# Add Boost 1.84.0 (relatively recent, released Dec 13th 2023)
+set(BOOST_URL "https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2" CACHE STRING "Boost download URL")
+set(BOOST_URL_SHA256 "cc4b893acf645c9d4b698e9a0f08ca8846aa5d6c68275c14c3e7949c24109454" CACHE STRING "Boost download URL SHA256 checksum")
 add_subdirectory(boost-cmake)
-add_executable(BoostReceiver benchmarks/boost/receiver.cc)
-target_link_libraries(BoostReceiver PUBLIC Boost::boost)
 
 # Build libraries
 add_library(KoiCommonUtils benchmarks/common/signals.cc cpp/common/logger.cc)
@@ -92,6 +93,14 @@ target_link_libraries(KoiSender INTERFACE KoiQueue)
 # Koi
 add_executable (koi_bench benchmarks/koi_queue/koi_benchmarks.cc)
 target_link_libraries(koi_bench benchmark::benchmark KoiReceiver KoiSender)
+
+# Boost IPC
+add_executable (boost_ipc benchmarks/boost/boost_benchmarks.cc)
+target_include_directories(boost_ipc PUBLIC benchmarks/boost)
+target_link_libraries(boost_ipc benchmark::benchmark Boost::boost spdlog::spdlog)
+
+add_executable(boost_test benchmarks/boost/boost_test.cc)
+target_link_libraries(boost_test Boost::boost)
 
 # Basic IPC benchmarks
 add_library(BenchmarkUtils benchmarks/common/utils.cc 
