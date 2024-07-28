@@ -21,7 +21,6 @@ public:
     void send(T val)
     {
         transport->send(val);
-        spdlog::debug("After send, Size: {}, Capacity: {}", transport->size(), transport->capacity());
     }
 
     size_t get_free_memory() const

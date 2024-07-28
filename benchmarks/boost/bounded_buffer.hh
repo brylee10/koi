@@ -1,8 +1,21 @@
+// Boost bounded buffer using a circular buffer, implemented based on the Boost docs:
+// https://www.boost.org/doc/libs/1_85_0/doc/html/circular_buffer/examples.html
 #pragma once
 #include "utils.hh"
 
 #include "spdlog/spdlog.h"
 #include <boost/circular_buffer.hpp>
+
+// Share the condition variables between threads
+// Typically, the shared data would be passed into each
+// thread on spawn but the Google Benchmark thread
+// spawning does not allow this.
+struct SharedData
+{
+    std::condition_variable not_empty;
+    std::condition_variable not_full;
+    std::mutex mutex;
+} shared_data;
 
 template <typename T>
 class BoundedBuffer
@@ -18,6 +31,17 @@ class BoundedBuffer
     managed_shared_memory segment_;
     const Mode mode_;
     const std::string name_;
+
+    bool is_not_empty() const
+    {
+        spdlog::debug("Unread {}", container_->size());
+        return container_->size() > 0;
+    }
+    bool full() const
+    {
+        spdlog::debug("Unread {}, Capacity {}", container_->size(), container_->capacity());
+        return container_->full();
+    }
 
 public:
     // Constructor for Sender mode
@@ -63,14 +87,29 @@ public:
 
     void send(T val)
     {
+        std::unique_lock lock(shared_data.mutex);
+        spdlog::debug("Sending a message");
+        shared_data.not_full.wait(lock, [this]
+                                  { return !this->full(); });
         container_->push_back(val);
         spdlog::debug("After send, Size: {}, Capacity: {}", container_->size(), container_->capacity());
+        lock.unlock();
+        shared_data.not_empty.notify_one();
+        spdlog::debug("Done with sending message");
     }
 
-    std::optional<T> recv()
+    T recv()
     {
+        spdlog::debug("Running recv");
+        std::unique_lock lock(shared_data.mutex);
+        spdlog::debug("Receiving a message");
+        shared_data.not_empty.wait(lock, [this]
+                                   { return this->is_not_empty(); });
+        spdlog::debug("Container not empty");
         T val = container_->front();
         container_->pop_front();
+        lock.unlock();
+        shared_data.not_full.notify_one();
         return val;
     }
 

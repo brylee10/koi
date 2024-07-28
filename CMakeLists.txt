@@ -1,7 +1,7 @@
 # cmake 3.0 released in June 2014
 cmake_minimum_required(VERSION 3.0)
 project(Koi LANGUAGES CXX VERSION 0.0.1)
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 

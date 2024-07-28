@@ -16,7 +16,7 @@ public:
         transport = std::make_unique<BoundedBuffer<T>>(name);
     }
 
-    std::optional<T> recv()
+    T recv()
     {
         return transport->recv();
     }

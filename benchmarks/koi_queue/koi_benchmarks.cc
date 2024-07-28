@@ -17,10 +17,12 @@ void BM_PingPong(benchmark::State &state)
     for (auto _ : state)
     {
         sender.send(msg);
-        Message val = receiver.recv();
+        std::optional<Message> val = receiver.recv();
+        assert(val.has_value());
+        Message val_inner = val.value();
         for (size_t i = 0; i < message_size; i++)
         {
-            assert(val.data[i] == msg.data[i]);
+            assert(val_inner.data[i] == msg.data[i]);
         }
     }
     // Cleanup

@@ -37,24 +37,66 @@ void BM_SingleThread_Empty_PingPong(benchmark::State &state)
     Sender sender = Sender<Message<message_size>>(queue_size, name);
     Receiver receiver = Receiver<Message<message_size>>(name);
     spdlog::info("Running ping-pong benchmark with message size: {}, queue size: {}, and test name {}", message_size, queue_size, name);
-    spdlog::info("Starting sender free memory: {}", sender.get_free_memory());
     Message<message_size> msg = {};
-    // Assign random values to the message
+    // Assign 1 to all values in the message
     for (size_t i = 0; i < message_size; i++)
     {
-        msg.data[i] = rand() % 256;
+        msg.data[i] = 1;
     }
-    // std::cout << msg << std::endl;
     for (auto _ : state)
     {
         sender.send(msg);
         // Confirm the receiver received correct messages
-        std::optional<Message<message_size>> received_msg = receiver.recv();
-        assert(received_msg.has_value());
-        Message received = received_msg.value();
+        Message<message_size> received = receiver.recv();
         for (size_t i = 0; i < message_size; i++)
         {
+            // Disabled in release mode
             assert(received.data[i] == msg.data[i]);
+        }
+    }
+}
+
+template <size_t queue_size, size_t message_size>
+void BM_TwoThread_Empty_PingPong(benchmark::State &state)
+{
+    spdlog::set_level(spdlog::level::err);
+
+    constexpr int SENDER_THREAD_ID = 0;
+    constexpr int RECEIVER_THREAD_ID = 1;
+
+    // Randomly generate a name for the queue once
+    static std::string name = "test" + std::to_string(rand());
+    // Sender
+    static Sender sender = Sender<Message<message_size>>(queue_size, name);
+    // Receiver
+    static Receiver receiver = Receiver<Message<message_size>>(name);
+    if (state.thread_index() >= 2)
+    {
+        throw std::runtime_error("Invalid thread index. Test assumes only two threads.");
+    }
+    spdlog::info("Running ping-pong benchmark with message size: {}, queue size: {}, and test name {}", message_size, queue_size, name);
+    Message<message_size> msg = {};
+    // Assign 1 to all values in the message
+    for (size_t i = 0; i < message_size; i++)
+    {
+        msg.data[i] = 1;
+    }
+    for (auto _ : state)
+    {
+        if (state.thread_index() == SENDER_THREAD_ID)
+        {
+            // If the transport is full, this will block until the receiver reads a message
+            sender.send(msg);
+        }
+        else if (state.thread_index() == RECEIVER_THREAD_ID)
+        {
+            // Confirm the receiver received correct messages
+            // This blocks until the sender sends a message
+            Message<message_size> received = receiver.recv();
+            for (size_t i = 0; i < message_size; i++)
+            {
+                assert(received.data[i] == msg.data[i]);
+            }
         }
     }
 }
@@ -69,5 +111,13 @@ BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 12, 1 << 6>);
 BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 12, 1 << 8>);
 BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 13, 1 << 12>);
 
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 20, 1 << 2>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 20, 1 << 6>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 20, 1 << 8>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 20, 1 << 12>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 12, 1 << 2>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 12, 1 << 6>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 12, 1 << 8>)->Threads(2);
+BENCHMARK(BM_TwoThread_Empty_PingPong<1 << 12, 1 << 12>)->Threads(2);
 // Run the benchmark
 BENCHMARK_MAIN();
