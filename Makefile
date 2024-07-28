@@ -588,19 +588,6 @@ boost_ipc/fast:
 .PHONY : boost_ipc/fast
 
 #=============================================================================
-# Target rules for targets named boost_test
-
-# Build rule for target.
-boost_test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 boost_test
-.PHONY : boost_test
-
-# fast build rule for target.
-boost_test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/build
-.PHONY : boost_test/fast
-
-#=============================================================================
 # Target rules for targets named BenchmarkUtils
 
 # Build rule for target.
@@ -1040,30 +1027,6 @@ benchmarks/boost/boost_benchmarks.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_ipc.dir/build.make CMakeFiles/boost_ipc.dir/benchmarks/boost/boost_benchmarks.cc.s
 .PHONY : benchmarks/boost/boost_benchmarks.cc.s
 
-benchmarks/boost/boost_test.o: benchmarks/boost/boost_test.cc.o
-.PHONY : benchmarks/boost/boost_test.o
-
-# target to build an object file
-benchmarks/boost/boost_test.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.o
-.PHONY : benchmarks/boost/boost_test.cc.o
-
-benchmarks/boost/boost_test.i: benchmarks/boost/boost_test.cc.i
-.PHONY : benchmarks/boost/boost_test.i
-
-# target to preprocess a source file
-benchmarks/boost/boost_test.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.i
-.PHONY : benchmarks/boost/boost_test.cc.i
-
-benchmarks/boost/boost_test.s: benchmarks/boost/boost_test.cc.s
-.PHONY : benchmarks/boost/boost_test.s
-
-# target to generate assembly for a file
-benchmarks/boost/boost_test.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/boost_test.dir/build.make CMakeFiles/boost_test.dir/benchmarks/boost/boost_test.cc.s
-.PHONY : benchmarks/boost/boost_test.cc.s
-
 benchmarks/common/args.o: benchmarks/common/args.cc.o
 .PHONY : benchmarks/common/args.o
 
@@ -1426,7 +1389,6 @@ help:
 	@echo "... benchmark"
 	@echo "... benchmark_main"
 	@echo "... boost_ipc"
-	@echo "... boost_test"
 	@echo "... koi_bench"
 	@echo "... launcher"
 	@echo "... shm_client"
@@ -1436,9 +1398,6 @@ help:
 	@echo "... benchmarks/boost/boost_benchmarks.o"
 	@echo "... benchmarks/boost/boost_benchmarks.i"
 	@echo "... benchmarks/boost/boost_benchmarks.s"
-	@echo "... benchmarks/boost/boost_test.o"
-	@echo "... benchmarks/boost/boost_test.i"
-	@echo "... benchmarks/boost/boost_test.s"
 	@echo "... benchmarks/common/args.o"
 	@echo "... benchmarks/common/args.i"
 	@echo "... benchmarks/common/args.s"

@@ -24,11 +24,14 @@ std::ostream &operator<<(std::ostream &os, Message<message_size> &msg)
     return os;
 }
 
+// Benchmarks a single thread ping pong where the queue is near empty (high contention)
 // `queue_size` is the total bytes of the shared memory segment. This means the number of elements
 // that can be held is the floor of `queue_size / message_size`.
 template <size_t queue_size, size_t message_size>
-void BM_PingPong(benchmark::State &state)
+void BM_SingleThread_Empty_PingPong(benchmark::State &state)
 {
+    spdlog::set_level(spdlog::level::err);
+
     // Randomly generate a name for the queue
     const std::string name = "test" + std::to_string(rand());
     Sender sender = Sender<Message<message_size>>(queue_size, name);
@@ -57,7 +60,14 @@ void BM_PingPong(benchmark::State &state)
 }
 
 // Boost Deque SHM benchmarks
-BENCHMARK(BM_PingPong<10000, 128>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 20, 1 << 2>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 20, 1 << 6>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 20, 1 << 8>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 20, 1 << 12>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 12, 1 << 2>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 12, 1 << 6>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 12, 1 << 8>);
+BENCHMARK(BM_SingleThread_Empty_PingPong<1 << 13, 1 << 12>);
 
 // Run the benchmark
 BENCHMARK_MAIN();

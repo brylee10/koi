@@ -1,7 +1,7 @@
 # cmake 3.0 released in June 2014
 cmake_minimum_required(VERSION 3.0)
 project(Koi LANGUAGES CXX VERSION 0.0.1)
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 
@@ -98,9 +98,6 @@ target_link_libraries(koi_bench benchmark::benchmark KoiReceiver KoiSender)
 add_executable (boost_ipc benchmarks/boost/boost_benchmarks.cc)
 target_include_directories(boost_ipc PUBLIC benchmarks/boost)
 target_link_libraries(boost_ipc benchmark::benchmark Boost::boost spdlog::spdlog)
-
-add_executable(boost_test benchmarks/boost/boost_test.cc)
-target_link_libraries(boost_test Boost::boost)
 
 # Basic IPC benchmarks
 add_library(BenchmarkUtils benchmarks/common/utils.cc 

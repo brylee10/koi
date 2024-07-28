@@ -17,7 +17,11 @@ void BM_PingPong(benchmark::State &state)
     for (auto _ : state)
     {
         sender.send(msg);
-        receiver.recv();
+        Message val = receiver.recv();
+        for (size_t i = 0; i < message_size; i++)
+        {
+            assert(val.data[i] == msg.data[i]);
+        }
     }
     // Cleanup
     sender.cleanup_shm();
