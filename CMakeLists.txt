@@ -65,9 +65,11 @@ FetchContent_Declare(
 # Make the spdlog content available
 FetchContent_MakeAvailable(spdlog)
 
-# Add Boost 1.84.0 (relatively recent, released Dec 13th 2023)
-set(BOOST_URL "https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2" CACHE STRING "Boost download URL")
-set(BOOST_URL_SHA256 "cc4b893acf645c9d4b698e9a0f08ca8846aa5d6c68275c14c3e7949c24109454" CACHE STRING "Boost download URL SHA256 checksum")
+# Add Boost 1.71.0 (released Apr 7th 2021, per https://boostorg.jfrog.io/artifactory/main/release/)
+# Did not select more recent Boost 1.86.0 (Aug 8 2024) because boost-cmake is pinned to 1.71.0
+set(BOOST_URL "https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.bz2" CACHE STRING "Boost download URL")
+set(BOOST_URL_SHA256 "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee" CACHE STRING "Boost download URL SHA256 checksum")
+# See instructions on adding boost-cmake: https://github.com/Orphis/boost-cmake
 add_subdirectory(boost-cmake)
 
 # Build libraries

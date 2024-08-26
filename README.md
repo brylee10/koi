@@ -10,7 +10,9 @@ A single producer single consumer (SPSC) high performance message queue.
 # Running
 Clone the repository locally and then run
 
-```
+```shell
+# Koi build uses a git submodule pointing to `boost-cmake`, pull this repository and any nested submodules 
+git submodules update --init --recursive
 cmake .
 make
 ```
