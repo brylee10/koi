@@ -1,12 +1,10 @@
-# cmake 3.0 released in June 2014
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(Koi LANGUAGES CXX VERSION 0.0.1)
-# set(CMAKE_BUILD_TYPE Debug)
 
 enable_testing()
 
 # Set the mandatory C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set the output directories
@@ -99,21 +97,6 @@ add_executable (boost_ipc benchmarks/boost/boost_benchmarks.cc)
 target_include_directories(boost_ipc PUBLIC benchmarks/boost)
 target_link_libraries(boost_ipc benchmark::benchmark Boost::boost spdlog::spdlog)
 
-# Basic IPC benchmarks
-add_library(BenchmarkUtils benchmarks/common/utils.cc 
-    benchmarks/common/args.cc benchmarks/common/bench.cc
-    benchmarks/common/signals.cc)
-target_include_directories(BenchmarkUtils PUBLIC benchmarks/common)
-
-add_library(ShmUtils benchmarks/shm/shm.cc) 
-target_include_directories(ShmUtils PUBLIC benchmarks/shm benchmarks/common)
-
-function(setup_ipc_executable target_name source output_name kind)
-    add_executable(${target_name} ${source})
-    target_link_libraries(${target_name} PRIVATE BenchmarkUtils ShmUtils)
-    set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${kind} OUTPUT_NAME ${output_name})
-endfunction()
-
-setup_ipc_executable(shm_client benchmarks/shm/client.cc client shm)
-setup_ipc_executable(shm_server benchmarks/shm/server.cc server shm)
-setup_ipc_executable(launcher benchmarks/common/launcher.cc launcher launcher)
+add_executable (boost_spsc benchmarks/boost_spsc/boost_benchmarks.cc)
+target_include_directories(boost_spsc PUBLIC benchmarks/boost_spsc)
+target_link_libraries(boost_spsc benchmark::benchmark Boost::boost spdlog::spdlog)

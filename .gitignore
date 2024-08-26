@@ -17,6 +17,7 @@ CMakeFiles
 _deps
 *.cmake
 *.tcl
+Makefile
 
 # Testing
 Testing
