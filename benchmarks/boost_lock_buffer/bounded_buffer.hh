@@ -5,6 +5,7 @@
 
 #include "spdlog/spdlog.h"
 #include <boost/circular_buffer.hpp>
+#include <optional>
 
 // Share the condition variables between threads
 // Typically, the shared data would be passed into each
@@ -12,8 +13,6 @@
 // spawning does not allow this.
 struct SharedData
 {
-    std::condition_variable not_empty;
-    std::condition_variable not_full;
     std::mutex mutex;
 } shared_data;
 
@@ -28,35 +27,47 @@ class BoundedBuffer
 
     IpcTransport<T> *container_;
     size_t unread_;
+    // Uses Boost Interprocess managed shared memory
+    // https://www.boost.org/doc/libs/1_85_0/doc/html/interprocess/managed_memory_segments.html
     managed_shared_memory segment_;
     const Mode mode_;
     const std::string name_;
 
-    bool is_not_empty() const
+    bool is_empty() const
     {
-        spdlog::debug("Unread {}", container_->size());
-        return container_->size() > 0;
+        spdlog::debug("is_empty: Unread {}", container_->size());
+        return container_->size() == 0;
     }
     bool full() const
     {
-        spdlog::debug("Unread {}, Capacity {}", container_->size(), container_->capacity());
+        spdlog::debug("full: Unread {}, Capacity {}", container_->size(), container_->capacity());
         return container_->full();
     }
 
 public:
-    // Constructor for Sender mode
-    BoundedBuffer(const unsigned long queue_size, const std::string &name)
+    // Queue size is measured in number of messages, not in bytes
+    BoundedBuffer(const std::string &name, const unsigned long queue_size)
         : unread_(0), mode_(Sender), name_(name)
     {
-        shared_memory_object::remove(name.c_str());
-
-        spdlog::debug("Creating shared memory segment with {} number of bytes", queue_size);
+        shared_memory_object::remove(name_.c_str());
+        spdlog::debug("Create shared memory segment named {}", name_);
         try
         {
-            segment_ = managed_shared_memory(create_only, name.c_str(), queue_size * sizeof(T) + 65536);
-            container_ = segment_.construct<IpcTransport<T>>("IpcTransport")(segment_.get_segment_manager());
-            container_->set_capacity(queue_size);
-            spdlog::debug("Transport created at address: {}", fmt::ptr(container_));
+            segment_ = managed_shared_memory(open_or_create, name.c_str(), queue_size * sizeof(T) + 65536);
+            // Find the circular buffer in the shared memory
+            std::pair<IpcTransport<T> *, std::size_t> res = segment_.find<IpcTransport<T>>("IpcTransport");
+            container_ = res.first;
+            if (!container_)
+            {
+                // Initialize the circular buffer if not already present
+                container_ = segment_.construct<IpcTransport<T>>("IpcTransport")(segment_.get_segment_manager());
+                container_->set_capacity(queue_size);
+                spdlog::debug("Transport created at address: {}", fmt::ptr(container_));
+            }
+            else
+            {
+                spdlog::debug("Transport opened at address: {}", fmt::ptr(container_));
+            }
         }
         catch (const std::exception &e)
         {
@@ -65,7 +76,7 @@ public:
         }
     }
 
-    // Constructor for Receiver mode
+    // Constructor which assumes the named shared memory segment already exists
     BoundedBuffer(const std::string &name)
         : unread_(0), mode_(Receiver), name_(name)
     {
@@ -82,34 +93,41 @@ public:
 
     ~BoundedBuffer()
     {
-        shared_memory_object::remove(shared_memory_name.c_str());
+        // spdlog::info("Removing shared memory segment named {}", name_);
+        // shared_memory_object::remove(name_.c_str());
     }
 
-    void send(T val)
+    // Returns true if send succeeded, otherwise false
+    bool send(T val)
     {
         std::unique_lock lock(shared_data.mutex);
         spdlog::debug("Sending a message");
-        shared_data.not_full.wait(lock, [this]
-                                  { return !this->full(); });
+        if (this->full())
+        {
+            spdlog::debug("Container full");
+            // `unique_lock` unlocks
+            return false;
+        }
         container_->push_back(val);
         spdlog::debug("After send, Size: {}, Capacity: {}", container_->size(), container_->capacity());
-        lock.unlock();
-        shared_data.not_empty.notify_one();
         spdlog::debug("Done with sending message");
+        return true;
     }
 
-    T recv()
+    std::optional<T> recv()
     {
         spdlog::debug("Running recv");
         std::unique_lock lock(shared_data.mutex);
         spdlog::debug("Receiving a message");
-        shared_data.not_empty.wait(lock, [this]
-                                   { return this->is_not_empty(); });
-        spdlog::debug("Container not empty");
+        if (this->is_empty())
+        {
+            spdlog::debug("Container empty");
+            return std::nullopt;
+        }
         T val = container_->front();
+        spdlog::debug("Container size before pop: {}", container_->size());
         container_->pop_front();
-        lock.unlock();
-        shared_data.not_full.notify_one();
+        spdlog::debug("Container size after pop: {}", container_->size());
         return val;
     }
 

@@ -50,6 +50,11 @@ target_include_directories(test_koi_queue PRIVATE
     cpp/fixed_size/receiver cpp/fixed_size/sender tests
 )
 
+set_target_properties(test_koi_queue PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/test
+    OUTPUT_NAME "koi_fixed_size"
+)
+
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
@@ -59,7 +64,7 @@ catch_discover_tests(test_koi_queue)
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG v1.14.0 
+  GIT_TAG v1.14.0
 )
 
 # Make the spdlog content available
@@ -73,8 +78,8 @@ set(BOOST_URL_SHA256 "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a858
 add_subdirectory(boost-cmake)
 
 # Build libraries
-add_library(KoiCommonUtils benchmarks/common/signals.cc cpp/common/logger.cc)
-target_include_directories(KoiCommonUtils PUBLIC cpp/common)
+add_library(KoiCommonUtils benchmarks/common/signals.cc cpp/common/logger.cc benchmarks/common/utils.cc)
+target_include_directories(KoiCommonUtils PUBLIC cpp/common benchmarks/common)
 target_link_libraries(KoiCommonUtils PUBLIC spdlog::spdlog)
 
 add_library(KoiQueue INTERFACE)
@@ -90,15 +95,37 @@ target_include_directories(KoiSender INTERFACE cpp/fixed_size/sender)
 target_link_libraries(KoiSender INTERFACE KoiQueue)
 
 # Benchmarks
+# Memcpy baseline
+add_executable (memcpy benchmarks/memcpy/memcpy.cc)
+target_link_libraries(memcpy benchmark::benchmark KoiCommonUtils)
+set_target_properties(memcpy PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
+    OUTPUT_NAME "memcpy"
+)
+
+# Shared benchmark
+add_executable (spsc_benchmarks benchmarks/spsc_benchmarks.cc)
+target_link_libraries(spsc_benchmarks benchmark::benchmark Boost::boost KoiCommonUtils)
+set_target_properties(spsc_benchmarks PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
+    OUTPUT_NAME "spsc_benchmarks"
+)
+
 # Koi
-add_executable (koi_bench benchmarks/koi_queue/koi_benchmarks.cc)
-target_link_libraries(koi_bench benchmark::benchmark KoiReceiver KoiSender)
+add_executable (koi_fixed_size_bench benchmarks/koi_queue/fixed_size.cc)
+target_link_libraries(koi_fixed_size_bench benchmark::benchmark KoiReceiver KoiSender KoiCommonUtils)
 
-# Boost IPC
-add_executable (boost_ipc benchmarks/boost/boost_benchmarks.cc)
-target_include_directories(boost_ipc PUBLIC benchmarks/boost)
-target_link_libraries(boost_ipc benchmark::benchmark Boost::boost spdlog::spdlog)
+set_target_properties(koi_fixed_size_bench PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
+    OUTPUT_NAME "koi_fixed_size"
+)
 
+# Boost Lock Buffer
 add_executable (boost_spsc benchmarks/boost_spsc/boost_benchmarks.cc)
 target_include_directories(boost_spsc PUBLIC benchmarks/boost_spsc)
 target_link_libraries(boost_spsc benchmark::benchmark Boost::boost spdlog::spdlog)
+
+set_target_properties(boost_spsc PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
+    OUTPUT_NAME "boost_spsc"
+)

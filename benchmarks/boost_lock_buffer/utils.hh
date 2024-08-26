@@ -1,9 +1,11 @@
 #pragma once
+
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/circular_buffer.hpp>
 #include <iostream>
 #include <string>
+#include <cassert>
 
 using namespace boost::interprocess;
 
@@ -19,6 +21,3 @@ using ShmemAllocator = allocator<T, managed_shared_memory::segment_manager>;
 // Define a deque that uses the allocator
 template <typename T>
 using IpcTransport = boost::circular_buffer<T, ShmemAllocator<T>>;
-
-// Shared memory name
-const std::string shared_memory_name = "BenchmarkBoost";

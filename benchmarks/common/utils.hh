@@ -4,12 +4,17 @@
 #include <stdio.h>
 #include <assert.h>
 
-#define COMPILE_ASSERTS 1
+void report_and_exit(const char *msg);
 
-#ifdef COMPILE_ASSERTS
-#define ASSERT(expr) assert(expr)
+// Set to 1 to compile with runtime asserts, typically used for debugging
+#define COMPILE_WITH_ASSERTS 1
+
+#if COMPILE_WITH_ASSERTS == 1
+#define ASSERT(expr)                                 \
+    if (!(expr))                                     \
+    {                                                \
+        report_and_exit("Assertion failed: " #expr); \
+    }
 #else
 #define ASSERT(expr) ((void)0)
 #endif
-
-void report_and_exit(const char *msg);
