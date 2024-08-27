@@ -5,6 +5,8 @@
 #include <benchmark/benchmark.h>
 #include <thread>
 
+using namespace koi;
+
 template <size_t queue_size, size_t message_size>
 void BM_PingPong(benchmark::State &state)
 {

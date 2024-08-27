@@ -59,11 +59,13 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
 
         Message msg = {1, 2};
         queue.send(msg);
+        REQUIRE(queue.size() == 1);
 
         auto recv_msg = queue.recv();
         REQUIRE(recv_msg.has_value());
         REQUIRE(recv_msg.value().x == 1);
         REQUIRE(recv_msg.value().y == 2);
+        REQUIRE(queue.size() == 0);
     }
 
     SECTION("Send Recv Multiple")
@@ -76,6 +78,7 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
             msgs.push_back({i, i});
             queue.send(msgs.back());
         }
+        REQUIRE(queue.size() == 10);
 
         for (int i = 0; i < 10; ++i)
         {
@@ -84,6 +87,7 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
             REQUIRE(recv_msg.value().x == msgs[i].x);
             REQUIRE(recv_msg.value().y == msgs[i].y);
         }
+        REQUIRE(queue.size() == 0);
     }
 }
 

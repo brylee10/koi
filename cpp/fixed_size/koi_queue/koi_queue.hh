@@ -6,8 +6,9 @@
 
 enum KoiQueueRet
 {
-    OK = 0,
-    QUEUE_FULL = 1,
+    // Assigned 0 as in "False" for unsuccessful operation
+    QUEUE_FULL = 0,
+    OK = 1,
 };
 
 // Shared information among all processes encoded in the shared memory
@@ -64,6 +65,8 @@ public:
     bool is_full() const;
     // Returns if the queue is empty
     bool is_empty() const;
+    // Returns the number of messages in the queue
+    size_t size() const;
 
 protected:
     // `buffer_bytes` will be rounded up to the nearest multiple of `CACHE_LINE_BYTES`

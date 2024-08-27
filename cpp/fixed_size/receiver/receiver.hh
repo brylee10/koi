@@ -2,14 +2,18 @@
 
 #include "koi_queue.hh"
 
-// An IPC receiver
-template <typename T>
-class KoiReceiver : public KoiQueue<T>
+namespace koi
 {
-public:
-    KoiReceiver(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
+    // An IPC receiver
+    template <typename T>
+    class KoiReceiver : public KoiQueue<T>
     {
-    }
+    public:
+        KoiReceiver(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
+        {
+        }
 
-    using KoiQueue<T>::recv;
-};
+        using KoiQueue<T>::recv;
+        using KoiQueue<T>::size;
+    };
+} // namespace koi

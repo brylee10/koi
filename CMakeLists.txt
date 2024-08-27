@@ -43,7 +43,7 @@ add_executable(test_koi_queue
     tests/fixed_size/koi_queue/test_single_thread.cpp 
     tests/fixed_size/koi_queue/test_multiprocess.cpp
 )
-target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue KoiCommonUtils)
+target_link_libraries(test_koi_queue PRIVATE Catch2::Catch2WithMain KoiQueue)
 target_include_directories(test_koi_queue PRIVATE 
     cpp/fixed_size/koi_queue 
     benchmarks/common 
@@ -105,7 +105,8 @@ set_target_properties(memcpy PROPERTIES
 
 # Shared benchmark
 add_executable (spsc_benchmarks benchmarks/spsc_benchmarks.cc)
-target_link_libraries(spsc_benchmarks benchmark::benchmark Boost::boost KoiCommonUtils)
+target_include_directories(spsc_benchmarks PUBLIC cpp)
+target_link_libraries(spsc_benchmarks benchmark::benchmark Boost::boost KoiReceiver KoiSender KoiQueue)
 set_target_properties(spsc_benchmarks PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
     OUTPUT_NAME "spsc_benchmarks"
@@ -113,7 +114,7 @@ set_target_properties(spsc_benchmarks PROPERTIES
 
 # Koi
 add_executable (koi_fixed_size_bench benchmarks/koi_queue/fixed_size.cc)
-target_link_libraries(koi_fixed_size_bench benchmark::benchmark KoiReceiver KoiSender KoiCommonUtils)
+target_link_libraries(koi_fixed_size_bench benchmark::benchmark KoiReceiver KoiSender)
 
 set_target_properties(koi_fixed_size_bench PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks
@@ -122,8 +123,8 @@ set_target_properties(koi_fixed_size_bench PROPERTIES
 
 # Boost Lock Buffer
 add_executable (boost_spsc benchmarks/boost_spsc/boost_benchmarks.cc)
-target_include_directories(boost_spsc PUBLIC benchmarks/boost_spsc)
-target_link_libraries(boost_spsc benchmark::benchmark Boost::boost spdlog::spdlog)
+target_include_directories(boost_spsc PUBLIC benchmarks/boost_spsc cpp)
+target_link_libraries(boost_spsc benchmark::benchmark Boost::boost KoiReceiver KoiSender KoiQueue)
 
 set_target_properties(boost_spsc PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/benchmarks

@@ -29,7 +29,7 @@ KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
 
     // TODO: Add check that the message size is not larger than the shm size
 
-    spdlog::debug("Constructing KoiQueue with shm_name: {}, user_shm_size: {}", shm_name, user_shm_size);
+    spdlog::info("Constructing KoiQueue with shm_name: {}, user_shm_size: {}", shm_name, user_shm_size);
     shm_metadata_.shm_name = std::string(shm_name);
 
     // The `user_shm_size` must be a power of 2
@@ -243,6 +243,8 @@ std::optional<T> KoiQueue<T>::recv()
     // Wrap around the ring buffer
     control_block_->read_offset = control_block_->read_offset & (shm_metadata_.user_shm_size - 1);
     control_block_->message_block_cnt--;
+    spdlog::debug("[recv()] message_block_cnt: {}, read_offset: {}, write_offset: {}", 
+            control_block_->message_block_cnt.load(), control_block_->read_offset.load(), control_block_->write_offset.load());
     return message;
 }
 
@@ -285,7 +287,7 @@ bool KoiQueue<T>::is_full() const
     // The check for message size not larger than the max message size is done statically in the
     // constructor
     size_t curr_queue_sz = curr_queue_sz_bytes();
-    spdlog::debug("curr_queue_sz: {}, message_block_cnt: {}, user_shm_size: {}",
+    spdlog::debug("[is_full()] curr_queue_sz: {}, message_block_cnt: {}, user_shm_size: {}",
                   curr_queue_sz, control_block_->message_block_cnt.load(), control_block_->user_shm_size);
     return curr_queue_sz >= control_block_->user_shm_size && control_block_->message_block_cnt != 0;
 }
@@ -293,5 +295,12 @@ bool KoiQueue<T>::is_full() const
 template <typename T>
 bool KoiQueue<T>::is_empty() const
 {
+    spdlog::debug("[is_empty()] message_block_cnt: {}", control_block_->message_block_cnt.load());
     return control_block_->message_block_cnt == 0;
+}
+
+template <typename T>
+size_t KoiQueue<T>::size() const
+{
+    return control_block_->message_block_cnt;
 }

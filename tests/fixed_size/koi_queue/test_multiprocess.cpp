@@ -8,6 +8,8 @@
 #include <chrono>
 #include <thread>
 
+using namespace koi;
+
 pid_t spawn_process()
 {
     pid_t pid = fork();
