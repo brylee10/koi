@@ -69,7 +69,8 @@ std::atomic<bool> two_thread_setup_done = false;
 static void SetupTwoThread(const benchmark::State &state)
 {
     // Randomly generate a name for the queue once
-    two_thread_name = "test" + std::to_string(rand());
+    srand(static_cast<unsigned int>(time(nullptr)));
+    two_thread_name = "testings" + std::to_string(rand());
 }
 
 static void TeardownTwoThread(const benchmark::State &state)
@@ -100,6 +101,9 @@ void BM_TwoThread_Empty_PingPong(benchmark::State &state)
     {
         msg.data[i] = 1;
     }
+    // In the below, using PauseTiming() and ResumeTiming() to isolate the `send()` and `recv()` was considered,
+    // but their overhead dominates short operations.
+    // See: https://github.com/google/benchmark/issues/797
     if (state.thread_index() == SENDER_THREAD_ID)
     {
         auto sender{Tx(two_thread_name, queue_size)};
@@ -107,14 +111,17 @@ void BM_TwoThread_Empty_PingPong(benchmark::State &state)
 
         for (auto _ : state)
         {
-            // Retry sends if the queue is full
+            // Retry sends if the queue is full. In this test this should not happen
+            // since after each send the receiver consumes messages
             while (!sender.send(msg))
             {
             }
-
-            // Do not send until the receiver has read the message
+            // state.PauseTiming();
             while (sender.size() > 0)
             {
+                // If the receiver is slow, yield to let receiver run
+                // to keep the queue empty
+                std::this_thread::yield();
             }
         }
     }
@@ -124,26 +131,22 @@ void BM_TwoThread_Empty_PingPong(benchmark::State &state)
         while (!two_thread_setup_done)
         {
         }
-        auto receiver{Rx(two_thread_name)};
+        auto receiver{Rx(two_thread_name, queue_size)};
         for (auto _ : state)
         {
             // Poll until the sender has sent a message
-            std::optional<Message<message_size>> received = std::nullopt;
-            do
+            while (receiver.size() == 0)
             {
-                received = receiver.recv();
-            } while (!received.has_value());
+                std::this_thread::yield();
+            }
+
+            // Only time the receive operation
+            auto received = receiver.recv();
+            // state.PauseTiming();
             // Confirm the receiver received correct messages
             for (size_t i = 0; i < message_size; i++)
             {
-                // Disabled in release mode
-                if (received.value().data[i] != msg.data[i])
-                {
-                    std::cerr << "Mismatch at index: " << i << std::endl;
-                    std::cerr << "Expected: " << msg << std::endl;
-                    std::cerr << "Received: " << received.value() << std::endl;
-                    throw std::runtime_error("Mismatch in received message");
-                }
+                ASSERT(received.value().data[i] != msg.data[i]);
             }
         }
         // After the receiver is done, there should be no more messages in the queue
@@ -182,19 +185,14 @@ void BM_TwoThread_Empty_PingPong(benchmark::State &state)
         ->Teardown(TeardownTwoThread);
 
 // Register all multithreaded benchmarks
-// MULTITHREAD_BENCH(1 << 20, 1 << 2)
-// MULTITHREAD_BENCH(1 << 20, 1 << 6)
-// MULTITHREAD_BENCH(1 << 20, 1 << 8)
-// MULTITHREAD_BENCH(1 << 20, 1 << 12)
-// MULTITHREAD_BENCH(1 << 12, 1 << 6)
-// MULTITHREAD_BENCH(1 << 12, 1 << 6)
-// MULTITHREAD_BENCH(1 << 12, 1 << 8)
-// MULTITHREAD_BENCH(1 << 12, 1 << 12)
+MULTITHREAD_BENCH(1 << 20, 1 << 2)
+MULTITHREAD_BENCH(1 << 20, 1 << 6)
+MULTITHREAD_BENCH(1 << 20, 1 << 8)
+MULTITHREAD_BENCH(1 << 20, 1 << 12)
 MULTITHREAD_BENCH(1 << 12, 1 << 2)
-MULTITHREAD_BENCH(1 << 12, 1 << 2)
-MULTITHREAD_BENCH(1 << 12, 1 << 2)
-MULTITHREAD_BENCH(1 << 12, 1 << 2)
-MULTITHREAD_BENCH(1 << 12, 1 << 2)
+MULTITHREAD_BENCH(1 << 12, 1 << 6)
+MULTITHREAD_BENCH(1 << 12, 1 << 8)
+MULTITHREAD_BENCH(1 << 12, 1 << 12)
 
 // Run the benchmarks
 BENCHMARK_MAIN();

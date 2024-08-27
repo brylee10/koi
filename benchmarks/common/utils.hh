@@ -7,7 +7,7 @@
 void report_and_exit(const char *msg);
 
 // Set to 1 to compile with runtime asserts, typically used for debugging
-#define COMPILE_WITH_ASSERTS 1
+#define COMPILE_WITH_ASSERTS 0
 
 #if COMPILE_WITH_ASSERTS == 1
 #define ASSERT(expr)                                 \

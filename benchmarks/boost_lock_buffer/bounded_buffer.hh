@@ -44,29 +44,53 @@ class BoundedBuffer
         return container_->full();
     }
 
+    static bool memory_segment_exists(const char *segment_name)
+    {
+        try
+        {
+            // Attempt to open the managed memory segment with open_only mode
+            managed_shared_memory mfile(open_only, segment_name);
+            return true;
+        }
+        catch (const interprocess_exception &ex)
+        {
+            // If the segment does not exist, an exception is thrown
+            if (ex.get_error_code() == not_found_error)
+            {
+                return false;
+            }
+            // Rethrow
+            throw;
+        }
+    }
+
 public:
     // Queue size is measured in number of messages, not in bytes
     BoundedBuffer(const std::string &name, const unsigned long queue_size)
         : unread_(0), mode_(Sender), name_(name)
     {
-        shared_memory_object::remove(name_.c_str());
-        spdlog::debug("Create shared memory segment named {}", name_);
+        spdlog::info("Create shared memory segment named {}", name_);
         try
         {
-            segment_ = managed_shared_memory(open_or_create, name.c_str(), queue_size * sizeof(T) + 65536);
-            // Find the circular buffer in the shared memory
-            std::pair<IpcTransport<T> *, std::size_t> res = segment_.find<IpcTransport<T>>("IpcTransport");
-            container_ = res.first;
-            if (!container_)
+            if (memory_segment_exists(name.c_str()))
             {
-                // Initialize the circular buffer if not already present
-                container_ = segment_.construct<IpcTransport<T>>("IpcTransport")(segment_.get_segment_manager());
-                container_->set_capacity(queue_size);
-                spdlog::debug("Transport created at address: {}", fmt::ptr(container_));
+                segment_ = managed_shared_memory(open_only, name.c_str());
+                // Find the circular buffer in the shared memory
+                std::pair<IpcTransport<T> *, std::size_t> res = segment_.find<IpcTransport<T>>("IpcTransport");
+                container_ = res.first;
+                if (!container_)
+                {
+                    throw std::runtime_error("Failed to find circular buffer in shared memory");
+                }
+                spdlog::info("Transport found at address: {}", fmt::ptr(container_));
             }
             else
             {
-                spdlog::debug("Transport opened at address: {}", fmt::ptr(container_));
+                segment_ = managed_shared_memory(create_only, name.c_str(), queue_size * sizeof(T) + 65536);
+                // Create the circular buffer in the shared memory
+                container_ = segment_.construct<IpcTransport<T>>("IpcTransport")(segment_.get_segment_manager());
+                container_->set_capacity(queue_size);
+                spdlog::info("Transport created at address: {}", fmt::ptr(container_));
             }
         }
         catch (const std::exception &e)
@@ -93,8 +117,8 @@ public:
 
     ~BoundedBuffer()
     {
-        // spdlog::info("Removing shared memory segment named {}", name_);
-        // shared_memory_object::remove(name_.c_str());
+        spdlog::info("Removing shared memory segment named {}", name_);
+        shared_memory_object::remove(name_.c_str());
     }
 
     // Returns true if send succeeded, otherwise false
