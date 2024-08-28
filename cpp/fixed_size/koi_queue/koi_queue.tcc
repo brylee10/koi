@@ -1,6 +1,6 @@
 
 #include "koi_queue.hh"
-#include "logger.hh"
+#include "koi_utils.hh"
 
 #include "spdlog/spdlog.h"
 
@@ -23,13 +23,13 @@ KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
 {
     load_spdlog_level();
     // `send`/`recv` will do a bitwise memcpy of T into the shared memory
-    constexpr size_t message_sz = sizeof(T);
     static_assert(std::is_trivially_copyable<T>::value, "T must be trivially copyable");
     static_assert(message_sz <= MAX_MESSAGE_SIZE_BYTES, "Message size is larger than the max message size");
-
+    
     // TODO: Add check that the message size is not larger than the shm size
 
-    spdlog::info("Constructing KoiQueue with shm_name: {}, user_shm_size: {}", shm_name, user_shm_size);
+    spdlog::info("Constructing KoiQueue with shm_name: {}, user_shm_size: {} bytes", shm_name, user_shm_size);
+    spdlog::info("KoiQueue running with message_sz: {}, header size: {} bytes, message_block_sz: {} bytes", message_sz, sizeof(MessageHeader), message_block_sz_);
     shm_metadata_.shm_name = std::string(shm_name);
 
     // The `user_shm_size` must be a power of 2
@@ -38,13 +38,13 @@ KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
         throw std::invalid_argument("user_shm_size provided " + std::to_string(user_shm_size) +
                                     " is not a power of 2");
     }
-    shm_metadata_.user_shm_size = user_shm_size;
+    shm_metadata_.user_shm_size = user_shm_size; 
 
     int open_ret = -1;
     try
     {
         open_ret = open_shm();
-        init_shm();
+        init_shm(open_ret);
     }
     catch (const std::exception &e)
     {
@@ -78,9 +78,10 @@ KoiQueue<T>::KoiQueue(const std::string_view shm_name, size_t user_shm_size)
     // The shared memory was created, so initialize the control block
     control_block_->user_shm_size = user_shm_size;
     control_block_->message_block_sz = message_block_sz_;
-    control_block_->read_offset = 0;
     control_block_->write_offset = 0;
-    control_block_->message_block_cnt = 0;
+    control_block_->r_user_shm_size = user_shm_size;
+    control_block_->r_message_block_sz = message_block_sz_;
+    control_block_->read_offset = 0;
     spdlog::debug("Control block initialized with user_shm_size: {}, message_block_sz: {}",
                   control_block_->user_shm_size, control_block_->message_block_sz);
 }
@@ -157,13 +158,11 @@ int KoiQueue<T>::open_shm()
 
 // Returns 0 on success, throws an error otherwise
 template <typename T>
-int KoiQueue<T>::init_shm()
+int KoiQueue<T>::init_shm(int shm_status)
 {
-    // The shared memory is initialized with an extra cache line number of bytes
-    // which holds the control block
-    static_assert(sizeof(ControlBlock) <= CACHE_LINE_BYTES,
-                  "ControlBlock is currently assumed to fit in a cache line");
-    size_t total_shm_size = CACHE_LINE_BYTES + shm_metadata_.user_shm_size;
+    // The shared memory is initialized with extra space bytes which holds the control block
+    size_t control_block_sz = size_rounded_to_cache_line<ControlBlock>();
+    size_t total_shm_size = control_block_sz + shm_metadata_.user_shm_size;
     spdlog::debug("ftruncate with total_shm_size: {}", total_shm_size);
     if (ftruncate(shm_metadata_.shm_fd, total_shm_size) == -1)
     {
@@ -185,66 +184,65 @@ int KoiQueue<T>::init_shm()
         perror("mmap");
         throw std::runtime_error("Failed to map shared memory");
     }
-
     shm_metadata_.shm_ptr = shm_ptr;
     // The queue shared memory starts after the control block
-    shm_metadata_.user_shm_start = shm_ptr + CACHE_LINE_BYTES;
+    shm_metadata_.user_shm_start = shm_ptr + control_block_sz;
     shm_metadata_.total_shm_size = total_shm_size;
+
+    if (shm_status == SHM_CREATED) {
+        spdlog::debug("Resetting all occupied flags in the message headers");
+        // Initialize all message headers to unoccupied on first creating the shm segment
+        for (size_t i = 0; i < shm_metadata_.user_shm_size; i += message_block_sz_)
+        {
+            MessageHeader *header = reinterpret_cast<MessageHeader *>(shm_metadata_.user_shm_start + i);
+            header->occupied = false;
+        }
+    }
     return 0;
 }
 
 template <typename T>
 KoiQueueRet KoiQueue<T>::send(T message)
 {
-    if (is_full())
+    char *start = shm_metadata_.user_shm_start + control_block_->write_offset;
+    MessageHeader* header = reinterpret_cast<MessageHeader*>(start);
+    if (header->occupied)
     {
         return KoiQueueRet::QUEUE_FULL;
     }
 
-    constexpr size_t message_sz = sizeof(T);
-    MessageHeader header = {message_sz};
-
-    char *start = shm_metadata_.user_shm_start + control_block_->write_offset;
-    char *header_end = start + sizeof(MessageHeader);
-    // Copy the header into the shared memory
-    std::copy(reinterpret_cast<char *>(&header),
-              reinterpret_cast<char *>(&header) + sizeof(MessageHeader), start);
-
     // Copy the message into the shared memory
+    char *header_end = start + sizeof(MessageHeader);
     std::copy(reinterpret_cast<char *>(&message),
               reinterpret_cast<char *>(&message) + message_sz, header_end);
 
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
-    control_block_->write_offset += message_block_sz_;
     // Wrap around the ring buffer
-    control_block_->write_offset = control_block_->write_offset & (shm_metadata_.user_shm_size - 1);
-    control_block_->message_block_cnt++;
+    // The following three control block fields are all on the same cacheline
+    control_block_->write_offset = (control_block_->write_offset + control_block_->message_block_sz) & (control_block_->user_shm_size - 1);
+    header->occupied = true;
     return KoiQueueRet::OK;
 }
 
 template <typename T>
 std::optional<T> KoiQueue<T>::recv()
 {
-    if (is_empty())
+    char *start = shm_metadata_.user_shm_start + control_block_->read_offset;
+    MessageHeader *header = reinterpret_cast<MessageHeader *>(start);
+    if (!header->occupied)
     {
         return std::nullopt;
     }
-
-    char *start = shm_metadata_.user_shm_start + control_block_->read_offset;
-    MessageHeader *header = reinterpret_cast<MessageHeader *>(start);
-    size_t message_sz = header->message_sz;
 
     char *header_end = start + sizeof(MessageHeader);
     T message;
     std::copy(header_end, header_end + message_sz, reinterpret_cast<char *>(&message));
 
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
-    control_block_->read_offset += message_block_sz_;
     // Wrap around the ring buffer
-    control_block_->read_offset = control_block_->read_offset & (shm_metadata_.user_shm_size - 1);
-    control_block_->message_block_cnt--;
-    spdlog::debug("[recv()] message_block_cnt: {}, read_offset: {}, write_offset: {}", 
-            control_block_->message_block_cnt.load(), control_block_->read_offset.load(), control_block_->write_offset.load());
+    // The following three control block fields are all on the same cacheline
+    control_block_->read_offset = (control_block_->read_offset + control_block_->r_message_block_sz) & (control_block_->r_user_shm_size - 1);
+    header->occupied = false;
     return message;
 }
 
@@ -260,7 +258,7 @@ size_t KoiQueue<T>::curr_queue_sz_bytes() const
     size_t curr_queue_sz = (control_block_->write_offset -
                             control_block_->read_offset + control_block_->user_shm_size) &
                            (control_block_->user_shm_size - 1);
-    if (curr_queue_sz == 0 && control_block_->message_block_cnt.load() != 0)
+    if (curr_queue_sz == 0 && is_full())
     {
         // Special case where the queue is full and the read and write offsets are the same
         return control_block_->user_shm_size;
@@ -271,7 +269,7 @@ size_t KoiQueue<T>::curr_queue_sz_bytes() const
 template <typename T>
 size_t KoiQueue<T>::shm_remaining_bytes() const
 {
-    spdlog::debug("user_shm_size: {}, curr_queue_sz_bytes: {}", control_block_->user_shm_size, curr_queue_sz_bytes());
+    // spdlog::debug("user_shm_size: {}, curr_queue_sz_bytes: {}", control_block_->user_shm_size, curr_queue_sz_bytes());
     return control_block_->user_shm_size - curr_queue_sz_bytes();
 }
 
@@ -284,23 +282,27 @@ constexpr size_t KoiQueue<T>::message_block_sz_bytes() const
 template <typename T>
 bool KoiQueue<T>::is_full() const
 {
-    // The check for message size not larger than the max message size is done statically in the
-    // constructor
-    size_t curr_queue_sz = curr_queue_sz_bytes();
-    spdlog::debug("[is_full()] curr_queue_sz: {}, message_block_cnt: {}, user_shm_size: {}",
-                  curr_queue_sz, control_block_->message_block_cnt.load(), control_block_->user_shm_size);
-    return curr_queue_sz >= control_block_->user_shm_size && control_block_->message_block_cnt != 0;
+    char *start = shm_metadata_.user_shm_start + control_block_->write_offset;
+    MessageHeader* header = reinterpret_cast<MessageHeader*>(start);
+    return header->occupied;
 }
 
 template <typename T>
 bool KoiQueue<T>::is_empty() const
 {
-    spdlog::debug("[is_empty()] message_block_cnt: {}", control_block_->message_block_cnt.load());
-    return control_block_->message_block_cnt == 0;
+    char *start = shm_metadata_.user_shm_start + control_block_->read_offset;
+    MessageHeader *header = reinterpret_cast<MessageHeader *>(start);
+    return !header->occupied;
 }
 
 template <typename T>
 size_t KoiQueue<T>::size() const
 {
-    return control_block_->message_block_cnt;
+    return curr_queue_sz_bytes() / message_block_sz_;
+}
+
+template <typename T>
+size_t KoiQueue<T>::capacity() const {
+    spdlog::debug("user_shm_size: {}, message_block_sz_: {}", control_block_->user_shm_size, message_block_sz_);
+    return control_block_->user_shm_size / message_block_sz_;
 }

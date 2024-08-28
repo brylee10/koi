@@ -125,7 +125,6 @@ public:
     bool send(T val)
     {
         std::unique_lock lock(shared_data.mutex);
-        spdlog::debug("Sending a message");
         if (this->full())
         {
             spdlog::debug("Container full");
@@ -133,8 +132,7 @@ public:
             return false;
         }
         container_->push_back(val);
-        spdlog::debug("After send, Size: {}, Capacity: {}", container_->size(), container_->capacity());
-        spdlog::debug("Done with sending message");
+        // spdlog::debug("After send, Size: {}, Capacity: {}", container_->size(), container_->capacity());
         return true;
     }
 
@@ -150,6 +148,7 @@ public:
         }
         T val = container_->front();
         spdlog::debug("Container size before pop: {}", container_->size());
+        // Boost circular buffer `pop_front` only removes the front element and does not return it
         container_->pop_front();
         spdlog::debug("Container size after pop: {}", container_->size());
         return val;

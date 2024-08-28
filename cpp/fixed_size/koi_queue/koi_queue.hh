@@ -1,8 +1,22 @@
 #pragma once
 
+#include "koi_utils.hh"
+
 #include <string>
 #include <optional>
 #include <atomic>
+
+// `MessageHeader` precedes each message block
+struct MessageHeader
+{
+    // Indicates if a block has been written to
+    std::atomic<bool> occupied;
+};
+
+// Maximum size of message message block selected as a multiple of `CACHE_LINE_BYTES`,
+// arbitrarily set to 2^10 * `CACHE_LINE_BYTES`
+constexpr size_t MAX_MESSAGE_BLOCK_BYTES = (1 << 10) * CACHE_LINE_BYTES;
+constexpr size_t MAX_MESSAGE_SIZE_BYTES = MAX_MESSAGE_BLOCK_BYTES - sizeof(MessageHeader);
 
 enum KoiQueueRet
 {
@@ -14,6 +28,11 @@ enum KoiQueueRet
 // Shared information among all processes encoded in the shared memory
 struct ControlBlock
 {
+    // The below are aligned to the nearest cache line to avoid false sharing
+    // `size_t` used for offsets to avoid negative values
+    // "tail"
+    alignas(CACHE_LINE_BYTES) std::atomic<size_t> write_offset;
+    // The below are not cache line aligned because they are read only
     // `user_shm_size` is user allocated shared memory size
     // (not including additional Koi queue metadata, like the control block size)
     // The real size of the shm is CACHE_LINE_SIZE + `user_shm_size`, where the first
@@ -21,26 +40,13 @@ struct ControlBlock
     size_t user_shm_size;
     // The size of a "message block" (the message header + the message itself)
     size_t message_block_sz;
-    // `size_t` used for offsets to avoid negative values
-    // "tail"
-    std::atomic<size_t> write_offset;
     // "head"
-    std::atomic<size_t> read_offset;
-    // Current number of message blocks in the queue
-    std::atomic<size_t> message_block_cnt;
+    alignas(CACHE_LINE_BYTES) std::atomic<size_t> read_offset;
+    // Duplicate the read only fields for the read cache line for prefetching.
+    // The values are identical to the write cache line
+    size_t r_user_shm_size;
+    size_t r_message_block_sz;
 };
-
-// `MessageHeader` precedes each message block
-struct MessageHeader
-{
-    size_t message_sz;
-};
-
-constexpr size_t CACHE_LINE_BYTES = 64;
-// Maximum size of message message block selected as a multiple of `CACHE_LINE_BYTES`,
-// arbitrarily set to 2^10 * `CACHE_LINE_BYTES`
-constexpr size_t MAX_MESSAGE_BLOCK_BYTES = (1 << 10) * CACHE_LINE_BYTES;
-constexpr size_t MAX_MESSAGE_SIZE_BYTES = MAX_MESSAGE_BLOCK_BYTES - sizeof(MessageHeader);
 
 // Forward declaration of KoiQueueRAII
 template <typename T>
@@ -67,6 +73,8 @@ public:
     bool is_empty() const;
     // Returns the number of messages in the queue
     size_t size() const;
+    // Returns max number of messages the queue can hold
+    size_t capacity() const;
 
 protected:
     // `buffer_bytes` will be rounded up to the nearest multiple of `CACHE_LINE_BYTES`
@@ -82,7 +90,9 @@ protected:
 private:
     // The size of a "message block" (the message header + the message itself)
     // Round message block size up to the nearest cache line
-    static constexpr size_t message_block_sz_ = (sizeof(T) + (CACHE_LINE_BYTES - 1)) & ~(CACHE_LINE_BYTES - 1);
+    // static constexpr size_t message_block_sz_ = (sizeof(MessageHeader) + sizeof(T) + (CACHE_LINE_BYTES - 1)) & ~(CACHE_LINE_BYTES - 1);
+    static constexpr size_t message_block_sz_ = size_rounded_up_to_pow_2_cache_line(sizeof(MessageHeader) + sizeof(T));
+    static constexpr size_t message_sz = sizeof(T);
     ControlBlock *control_block_;
 
     struct ShmMetadata
@@ -91,6 +101,7 @@ private:
         int shm_fd;
         char *shm_ptr;
         // `shm_ptr` + sizeof(ControlBlock) (aligned to the nearest cache line)
+        // Start of implicit ring buffer data structure
         char *user_shm_start;
         size_t total_shm_size;
         size_t user_shm_size;
@@ -100,9 +111,9 @@ private:
 
     // Initialization order is `open_shm` then `init_shm`
     int open_shm();
-    int init_shm();
+    int init_shm(int);
 
-    // Allow `KoiQueueRAII` to access private members, particularly `cleanup_shm`
+    // Allow `KoiQueueRAII` to access private and protectedmembers, particularly `cleanup_shm`
     friend class KoiQueueRAII<T>;
 };
 
@@ -132,4 +143,5 @@ private:
     using KoiQueue<T>::cleanup_shm;
 };
 
+// Ensure all dependencies are declared
 #include "koi_queue.tcc"

@@ -44,6 +44,22 @@ TEST_CASE("KoiQueue Lifecycle", "[KoiQueue][SingleThread]")
     }
 }
 
+TEST_CASE("KoiQueue Metadata", "[KoiQueue][SingleThread]")
+{
+    const std::string shm_name = generate_unique_shm_name();
+    SECTION("Message Size")
+    {
+        // The KoiQueue should add padding until each message is the next greatest power of two of the cache line size
+        // This way the total shm size is a multiple of the message size
+        struct Message
+        {
+            char data[CACHE_LINE_BYTES * 2 + 1];
+        };
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
+        REQUIRE(queue.message_block_sz_bytes() == CACHE_LINE_BYTES * 4);
+    }
+}
+
 TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
 {
     const std::string shm_name = generate_unique_shm_name();
@@ -86,6 +102,78 @@ TEST_CASE("KoiQueue Send Recv", "[KoiQueue][SingleThread]")
             REQUIRE(recv_msg.has_value());
             REQUIRE(recv_msg.value().x == msgs[i].x);
             REQUIRE(recv_msg.value().y == msgs[i].y);
+        }
+        REQUIRE(queue.size() == 0);
+    }
+}
+
+TEST_CASE("KoiQueue Send Recv Large Message", "[KoiQueue][SingleThread][LargeMessage]")
+{
+    // Use large messages that are already multiples of the cache line
+    const std::string shm_name = generate_unique_shm_name();
+    constexpr size_t message_size = 2 * CACHE_LINE_BYTES;
+    // Send enough messages to fill the SHM segment multiple times
+    constexpr int num_it = SHM_SIZE / message_size * 4;
+    struct Message
+    {
+        int data[message_size];
+    };
+    Message msg = {};
+    for (int i = 0; i < message_size; ++i)
+    {
+        msg.data[i] = i;
+    }
+    SECTION("Send Recv Single")
+    {
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
+
+        queue.send(msg);
+        REQUIRE(queue.size() == 1);
+
+        auto recv_msg = queue.recv();
+        REQUIRE(recv_msg.has_value());
+        REQUIRE(queue.size() == 0);
+        for (int i = 0; i < message_size; ++i)
+        {
+            REQUIRE(recv_msg.value().data[i] == i);
+        }
+    }
+
+    SECTION("Send Recv Multiple")
+    {
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
+
+        for (int i = 0; i < 10; ++i)
+        {
+            queue.send(msg);
+        }
+        REQUIRE(queue.size() == 10);
+
+        for (int i = 0; i < 10; ++i)
+        {
+            auto recv_msg = queue.recv();
+            REQUIRE(recv_msg.has_value());
+            for (int i = 0; i < message_size; ++i)
+            {
+                REQUIRE(recv_msg.value().data[i] == i);
+            }
+        }
+        REQUIRE(queue.size() == 0);
+    }
+
+    SECTION("Send Recv Alternating, Fill SHM")
+    {
+        KoiQueueRAII<Message> queue(shm_name, SHM_SIZE);
+
+        for (int i = 0; i < num_it; ++i)
+        {
+            queue.send(msg);
+            auto recv_msg = queue.recv();
+            REQUIRE(recv_msg.has_value());
+            for (int i = 0; i < message_size; ++i)
+            {
+                REQUIRE(recv_msg.value().data[i] == i);
+            }
         }
         REQUIRE(queue.size() == 0);
     }

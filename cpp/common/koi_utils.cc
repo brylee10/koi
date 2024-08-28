@@ -1,4 +1,4 @@
-#include "logger.hh"
+#include "koi_utils.hh"
 
 void load_spdlog_level()
 {

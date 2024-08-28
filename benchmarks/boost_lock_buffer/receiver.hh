@@ -13,7 +13,7 @@ namespace boost_lock_buffer
         const std::string name_;
 
     public:
-        Receiver(const std::string name, const unsigned long queue_size) : name_(name)
+        Receiver(const std::string name, const size_t queue_size) : name_(name)
         {
             transport = std::make_unique<BoundedBuffer<T>>(name, queue_size);
         }
@@ -31,6 +31,11 @@ namespace boost_lock_buffer
         size_t size() const
         {
             return transport->size();
+        }
+
+        size_t capacity() const
+        {
+            return transport->capacity();
         }
     };
 } // namespace boost_lock_buffer

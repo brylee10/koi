@@ -7,16 +7,19 @@
 namespace boost_spsc
 {
     template <typename T>
-    class Receiver
+    class Sender
     {
         boost::lockfree::spsc_queue<T> *transport;
+        // Keep the managed shared memory segment in scope, otherwise:
+        // "When the managed_shared_memory object is destroyed, the shared memory object is automatically unmapped,
+        // and all the resources are freed."
         managed_shared_memory segment_;
         size_t queue_size_;
 
     public:
-        Receiver(const std::string_view name, const size_t queue_size) : queue_size_(queue_size)
+        Sender(const std::string_view name, size_t queue_size) : queue_size_(queue_size)
         {
-            spdlog::debug("Constructing Boost SPSC Receiver");
+            spdlog::debug("Constructing Boost SPSC Sender");
             // Allocate a `queue_size` number of elements plus overhead
             // String view does not guarantee null character termination so it has no c_str() like std::string
             // The original string will have null termination, so `data()` is used
@@ -25,18 +28,14 @@ namespace boost_spsc
             // See: https://www.boost.org/doc/libs/1_76_0/doc/html/boost/lockfree/spsc_queue.html
             // `explicit spsc_queue(size_type element_count);`
             transport = segment_.find_or_construct<boost::lockfree::spsc_queue<T>>("IpcTransport")(queue_size);
+            spdlog::debug("Transport created at address: {}", fmt::ptr(transport));
         }
 
-        // Returns the received message, or `std::nullopt` if no message was received
-        std::optional<T> recv()
+        // Returns true if the message was sent, false otherwise
+        bool send(T const &val)
         {
-            spdlog::debug("Receiving a message");
-            T val;
-            if (transport->pop(val))
-            {
-                return val;
-            }
-            return std::nullopt;
+            spdlog::debug("Sending a message");
+            return transport->push(val);
         }
 
         // Returns number of elements in the queue
