@@ -212,45 +212,53 @@ int KoiQueue<T>::init_shm(int shm_status)
 template <typename T>
 KoiQueueRet KoiQueue<T>::send(T message)
 {
-    char *start = shm_metadata_.user_shm_start + control_block_->write.offset;
+    // 3 cache misses
+    const size_t write_offset = control_block_->write.offset.load(std::memory_order_relaxed); // 1
+    char *start = shm_metadata_.user_shm_start + write_offset;                                // 2
     MessageHeader *header = reinterpret_cast<MessageHeader *>(start);
-    if (header->occupied)
+    if (header->occupied.load(std::memory_order_acquire)) // 3
     {
         return KoiQueueRet::QUEUE_FULL;
     }
 
     // Copy the message into the shared memory
     char *header_end = start + sizeof(MessageHeader);
-    std::copy(reinterpret_cast<char *>(&message),
-              reinterpret_cast<char *>(&message) + message_sz, header_end);
+    char *message_ptr = reinterpret_cast<char *>(&message);
+    std::copy(message_ptr, message_ptr + shm_metadata_.message_sz, header_end);
 
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
     // Wrap around the ring buffer
     // The following three control block fields are all on the same cacheline
-    control_block_->write.offset = (control_block_->write.offset + control_block_->write.message_block_sz) & (control_block_->write.user_shm_size - 1);
-    header->occupied = true;
+    const size_t next_write_offset = (write_offset + control_block_->write.message_block_sz) & (control_block_->write.user_shm_size - 1);
+    // `memory_order_relaxed` because synchronization occurs via the `occupied` flag
+    control_block_->write.offset.store(next_write_offset, std::memory_order_relaxed);
+    header->occupied.store(true, std::memory_order_release);
     return KoiQueueRet::OK;
 }
 
 template <typename T>
 std::optional<T> KoiQueue<T>::recv()
 {
-    char *start = shm_metadata_.user_shm_start + control_block_->read.offset;
+    // 3 cache misses
+    const size_t read_offset = control_block_->read.offset.load(std::memory_order_relaxed); // 1
+    char *start = shm_metadata_.user_shm_start + read_offset;                               // 2
     MessageHeader *header = reinterpret_cast<MessageHeader *>(start);
-    if (!header->occupied)
+    if (!header->occupied.load(std::memory_order_acquire)) // 3
     {
         return std::nullopt;
     }
 
     char *header_end = start + sizeof(MessageHeader);
     T message;
-    std::copy(header_end, header_end + message_sz, reinterpret_cast<char *>(&message));
+    std::copy(header_end, header_end + shm_metadata_.message_sz, reinterpret_cast<char *>(&message));
 
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
     // Wrap around the ring buffer
     // The following three control block fields are all on the same cacheline
-    control_block_->read.offset = (control_block_->read.offset + control_block_->read.message_block_sz) & (control_block_->read.user_shm_size - 1);
-    header->occupied = false;
+    const size_t next_read_offset = (control_block_->read.offset + control_block_->read.message_block_sz) & (control_block_->read.user_shm_size - 1);
+    // `memory_order_relaxed` because synchronization occurs via the `occupied` flag
+    control_block_->read.offset.store(next_read_offset, std::memory_order_relaxed);
+    header->occupied.store(false, std::memory_order_release);
     return message;
 }
 

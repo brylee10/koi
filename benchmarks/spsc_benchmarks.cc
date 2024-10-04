@@ -415,7 +415,7 @@ void BM_TwoThread_Full_PingPong(benchmark::State &state)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 2)
+EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 4)
 EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 6)
 EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 8)
 
@@ -440,7 +440,7 @@ EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 8)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 2)
+PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 4)
 PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 6)
 PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 8)
 
@@ -465,7 +465,7 @@ PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 8)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-FULL_MULTITHREAD_BENCH(1 << 12, 1 << 2)
+FULL_MULTITHREAD_BENCH(1 << 12, 1 << 4)
 FULL_MULTITHREAD_BENCH(1 << 12, 1 << 6)
 FULL_MULTITHREAD_BENCH(1 << 12, 1 << 8)
 

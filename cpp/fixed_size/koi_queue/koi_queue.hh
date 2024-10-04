@@ -115,6 +115,7 @@ private:
         // `shm_ptr` + sizeof(ControlBlock) (aligned to the nearest cache line)
         // Start of implicit ring buffer data structure
         char *user_shm_start;
+        size_t message_sz = sizeof(T);
         size_t total_shm_size;
         size_t user_shm_size;
     };
