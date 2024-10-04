@@ -229,7 +229,11 @@ KoiQueueRet KoiQueue<T>::send(T message)
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
     // Wrap around the ring buffer
     // The following three control block fields are all on the same cacheline
-    const size_t next_write_offset = (write_offset + control_block_->write.message_block_sz) & (control_block_->write.user_shm_size - 1);
+    size_t next_write_offset = write_offset + control_block_->write.message_block_sz;
+    if (next_write_offset >= control_block_->write.user_shm_size) [[unlikely]]
+    {
+        next_write_offset &= control_block_->write.user_shm_size - 1;
+    }
     // `memory_order_relaxed` because synchronization occurs via the `occupied` flag
     control_block_->write.offset.store(next_write_offset, std::memory_order_relaxed);
     header->occupied.store(true, std::memory_order_release);
@@ -255,7 +259,12 @@ std::optional<T> KoiQueue<T>::recv()
     // Every message is rounded up to the nearest cache line (`message_block_sz_`)
     // Wrap around the ring buffer
     // The following three control block fields are all on the same cacheline
-    const size_t next_read_offset = (control_block_->read.offset + control_block_->read.message_block_sz) & (control_block_->read.user_shm_size - 1);
+    size_t next_read_offset = read_offset + control_block_->read.message_block_sz;
+    if (next_read_offset >= control_block_->read.user_shm_size) [[unlikely]]
+    {
+        next_read_offset &= control_block_->read.user_shm_size - 1;
+    }
+
     // `memory_order_relaxed` because synchronization occurs via the `occupied` flag
     control_block_->read.offset.store(next_read_offset, std::memory_order_relaxed);
     header->occupied.store(false, std::memory_order_release);
