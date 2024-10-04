@@ -415,9 +415,10 @@ void BM_TwoThread_Full_PingPong(benchmark::State &state)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-EMPTY_MULTITHREAD_BENCH(1 << 15, 1 << 4)
-EMPTY_MULTITHREAD_BENCH(1 << 15, 1 << 6)
-EMPTY_MULTITHREAD_BENCH(1 << 15, 1 << 8)
+EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 4) // 16
+EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 5) // 32
+EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 6) // 64
+EMPTY_MULTITHREAD_BENCH(1 << 12, 1 << 7) // 128
 
 // Partial Fill
 // Note that Koi takes a queue_size in bytes while the others take the number of elements
@@ -440,9 +441,10 @@ EMPTY_MULTITHREAD_BENCH(1 << 15, 1 << 8)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-PARTIAL_FILL_MULTITHREAD_BENCH(1 << 15, 1 << 4)
-PARTIAL_FILL_MULTITHREAD_BENCH(1 << 15, 1 << 6)
-PARTIAL_FILL_MULTITHREAD_BENCH(1 << 15, 1 << 8)
+PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 4)
+PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 5)
+PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 6)
+PARTIAL_FILL_MULTITHREAD_BENCH(1 << 12, 1 << 7)
 
 // Full
 // Note that Koi takes a queue_size in bytes while the others take the number of elements
@@ -465,9 +467,10 @@ PARTIAL_FILL_MULTITHREAD_BENCH(1 << 15, 1 << 8)
         ->Setup(SetupBench)                                       \
         ->Teardown(TeardownTwoThread);
 
-FULL_MULTITHREAD_BENCH(1 << 15, 1 << 4)
-FULL_MULTITHREAD_BENCH(1 << 15, 1 << 6)
-FULL_MULTITHREAD_BENCH(1 << 15, 1 << 8)
+FULL_MULTITHREAD_BENCH(1 << 12, 1 << 4)
+FULL_MULTITHREAD_BENCH(1 << 12, 1 << 5)
+FULL_MULTITHREAD_BENCH(1 << 12, 1 << 6)
+FULL_MULTITHREAD_BENCH(1 << 12, 1 << 7)
 
 // Run the benchmarks
 BENCHMARK_MAIN();
