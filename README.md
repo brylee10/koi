@@ -12,7 +12,7 @@ Clone the repository locally and then run
 
 ```shell
 # Koi build uses a git submodule pointing to `boost-cmake`, pull this repository and any nested submodules 
-git submodules update --init --recursive
+git submodule update --init --recursive
 cmake .
 make
 ```

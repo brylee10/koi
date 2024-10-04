@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(Koi LANGUAGES CXX VERSION 0.0.1)
 
 enable_testing()
@@ -20,11 +20,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_TAG        v3.4.0 # or a later release
 )
-FetchContent_MakeAvailable(catch2)
-
-# Add the test executable
-# https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#usage
-find_package(Catch2 REQUIRED)
+FetchContent_MakeAvailable(Catch2)
 
 # Disable the Google Benchmark requirement on Google Test
 set(BENCHMARK_ENABLE_TESTING NO)
@@ -55,7 +51,7 @@ set_target_properties(test_koi_queue PROPERTIES
     OUTPUT_NAME "koi_fixed_size"
 )
 
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
 catch_discover_tests(test_koi_queue)
