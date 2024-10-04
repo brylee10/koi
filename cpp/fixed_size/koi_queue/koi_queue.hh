@@ -25,28 +25,40 @@ enum KoiQueueRet
     OK = 1,
 };
 
+// Contains read/write metadata on one cacheline
+struct ControlBlockInner
+{
+    // Either read or write offset
+    std::atomic<size_t> offset;
+    // Duplicate the read only fields for the read/write cache line for prefetching.
+    // The values are identical between the read/write cache lines.
+    size_t user_shm_size;
+    size_t message_block_sz;
+};
+
 // Shared information among all processes encoded in the shared memory
 struct ControlBlock
 {
     // The below are aligned to the nearest cache line to avoid false sharing
     // `size_t` used for offsets to avoid negative values
     // "tail"
-    alignas(CACHE_LINE_BYTES) std::atomic<size_t> write_offset;
-    // The below are not cache line aligned because they are read only
-    // `user_shm_size` is user allocated shared memory size
-    // (not including additional Koi queue metadata, like the control block size)
-    // The real size of the shm is CACHE_LINE_SIZE + `user_shm_size`, where the first
-    // cache line holds the `ControlBlock`
-    size_t user_shm_size;
-    // The size of a "message block" (the message header + the message itself)
-    size_t message_block_sz;
+    alignas(CACHE_LINE_BYTES) ControlBlockInner write;
     // "head"
-    alignas(CACHE_LINE_BYTES) std::atomic<size_t> read_offset;
-    // Duplicate the read only fields for the read cache line for prefetching.
-    // The values are identical to the write cache line
-    size_t r_user_shm_size;
-    size_t r_message_block_sz;
+    alignas(CACHE_LINE_BYTES) ControlBlockInner read;
 };
+
+inline std::ostream &operator<<(std::ostream &os, const ControlBlockInner &b)
+{
+    os << "Offset: " << b.offset << ", user shm size: " << b.user_shm_size
+       << ", message block sz: " << b.message_block_sz << std::endl;
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const ControlBlock &b)
+{
+    os << "Writer: " << b.write << ", Reader: " << b.read << std::endl;
+    return os;
+}
 
 // Forward declaration of KoiQueueRAII
 template <typename T>
@@ -78,19 +90,19 @@ public:
 
 protected:
     // `buffer_bytes` will be rounded up to the nearest multiple of `CACHE_LINE_BYTES`
-    KoiQueue(const std::string_view name, size_t buffer_bytes);
+    explicit KoiQueue(const std::string name, size_t buffer_bytes);
     virtual ~KoiQueue();
 
     // Returns `KoiQueueRet::QUEUE_FULL` if the queue is full, otherwise `KoiQueueRet::OK`
     KoiQueueRet send(T message);
     std::optional<T> recv();
 
-    void cleanup_shm();
+    // Exception safety. Marked as `noexcept` such that an exception is not thrown during stack unwinding which leads to terminate.
+    void cleanup_shm() noexcept;
 
 private:
     // The size of a "message block" (the message header + the message itself)
-    // Round message block size up to the nearest cache line
-    // static constexpr size_t message_block_sz_ = (sizeof(MessageHeader) + sizeof(T) + (CACHE_LINE_BYTES - 1)) & ~(CACHE_LINE_BYTES - 1);
+    // Round message block size up to a multiple of cache line
     static constexpr size_t message_block_sz_ = size_rounded_up_to_pow_2_cache_line(sizeof(MessageHeader) + sizeof(T));
     static constexpr size_t message_sz = sizeof(T);
     ControlBlock *control_block_;
@@ -126,7 +138,7 @@ class KoiQueueRAII : public KoiQueue<T>
 public:
     // `explicit` constructor optional since the class takes two arguments which is difficult
     // to accidentally invoke with an implicit conversion
-    explicit KoiQueueRAII(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
+    explicit KoiQueueRAII(const std::string name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
     {
     }
 

@@ -28,7 +28,7 @@ The benchmarks located in `benchmarks` can be run via:
 # Runs baseline memcpy benchmark
 bin/benchmarks/memcpy
 # Runs Koi fixed size benchmark
-bin/benchmarks/koi_fixed_size
+bin/benchmarks/spsc_benchmarks
 ```
 
 # Benchmarks
@@ -42,6 +42,8 @@ CPU Caches:
   L1 Instruction 128 KiB
   L2 Unified 4096 KiB (x10)
 ```
+
+This machine has relatively large page table sizes (`hw.pagesize: 16384`) a 12MB performance L2 cache (`hw.perflevel0.l2cachesize: 12582912`) and a 4MB efficiency L2 cache (`hw.perflevel1.l2cachesize: 4194304`) and 128 byte cache lines (`hw.cachelinesize: 128`).
 
 Koi is benchmarked against:
 - Boost [lock free SPSC queue](https://www.boost.org/doc/libs/1_76_0/doc/html/boost/lockfree/spsc_queue.html)

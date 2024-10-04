@@ -9,7 +9,7 @@ namespace koi
     class KoiSender : public KoiQueue<T>
     {
     public:
-        KoiSender(const std::string_view name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
+        KoiSender(const std::string name, size_t buffer_bytes) : KoiQueue<T>(name, buffer_bytes)
         {
         }
 
